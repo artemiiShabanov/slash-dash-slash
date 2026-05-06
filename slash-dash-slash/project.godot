@@ -18,6 +18,19 @@ config/icon="res://icon.svg"
 [autoload]
 
 InputSystem="*res://scripts/input_system.gd"
+CRTOverlay="*res://scripts/crt_overlay.gd"
+
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=360
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/stretch/scale_mode="integer"
+
+[gui]
+
+theme/custom="res://resources/default_theme.tres"
 
 [input_devices]
 

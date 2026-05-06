@@ -1,0 +1,209 @@
+[gd_resource type="Theme" load_steps=14 format=3 uid="uid://b2dthemfdef03"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/font_ui.ttf" id="1_fontui"]
+[ext_resource type="FontFile" path="res://assets/fonts/font_document.ttf" id="2_fontdoc"]
+
+; Default project Theme.
+;
+; Inverted-CRT scheme: dark backgrounds, bright text, dot-matrix-green accents
+; on hover/borders, solid-green "selected" state on pressed buttons. Mimics a
+; 1970s monochrome terminal.
+;
+; Default font: VT323 (terminal/CRT) — drives all in-game UI.
+; Document variation font: Special Elite (typewriter) — used by the Document
+; type_variation on RichTextLabel and PanelContainer for paper-styled surfaces.
+;
+; The `Document` type variation breaks the inverted-CRT scheme on purpose —
+; paper documents (resignation form, memos, in-world notes) render as
+; dark-ink-on-paper-yellow for diegetic contrast.
+;
+; Colors are hardcoded snapshots of `palette.tres` defaults — keep in sync
+; manually when tuning the palette.
+;
+; Palette references (hardcoded):
+;   paper_yellow      = Color(0.96, 0.91, 0.74)
+;   bone_white        = Color(0.92, 0.89, 0.81)
+;   ink_black         = Color(0.07, 0.06, 0.05)
+;   fluorescent_white = Color(0.96, 0.97, 0.92)
+;   shadow_grey       = Color(0.45, 0.42, 0.38)
+;   dot_matrix_green  = Color(0.34, 0.78, 0.42)
+;   blood_red         = Color(0.65, 0.16, 0.13)
+;   boardroom_black   = Color(0.10, 0.09, 0.10)
+
+; ===== StyleBoxes =====
+
+[sub_resource type="StyleBoxFlat" id="sb_panel"]
+bg_color = Color(0.1, 0.09, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.78, 0.42, 1)
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="sb_panel_document"]
+bg_color = Color(0.96, 0.91, 0.74, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.42, 0.38, 1)
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="sb_btn_normal"]
+bg_color = Color(0.1, 0.09, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.96, 0.97, 0.92, 1)
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="sb_btn_hover"]
+bg_color = Color(0.18, 0.16, 0.16, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.78, 0.42, 1)
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="sb_btn_pressed"]
+bg_color = Color(0.34, 0.78, 0.42, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.96, 0.97, 0.92, 1)
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="sb_btn_disabled"]
+bg_color = Color(0.07, 0.06, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.42, 0.38, 1)
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="sb_lineedit"]
+bg_color = Color(0.07, 0.06, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.34, 0.78, 0.42, 1)
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="sb_progress_bg"]
+bg_color = Color(0.07, 0.06, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.42, 0.38, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_progress_fill"]
+bg_color = Color(0.65, 0.16, 0.13, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_scroll_track"]
+bg_color = Color(0.07, 0.06, 0.05, 1)
+
+[sub_resource type="StyleBoxFlat" id="sb_scroll_grabber"]
+bg_color = Color(0.34, 0.78, 0.42, 1)
+
+[resource]
+default_font = ExtResource("1_fontui")
+default_font_size = 16
+
+; ===== Label =====
+Label/colors/font_color = Color(0.96, 0.97, 0.92, 1)
+
+; ===== Button =====
+Button/colors/font_color = Color(0.96, 0.97, 0.92, 1)
+Button/colors/font_hover_color = Color(0.96, 0.97, 0.92, 1)
+Button/colors/font_pressed_color = Color(0.07, 0.06, 0.05, 1)
+Button/colors/font_disabled_color = Color(0.45, 0.42, 0.38, 1)
+Button/styles/normal = SubResource("sb_btn_normal")
+Button/styles/hover = SubResource("sb_btn_hover")
+Button/styles/pressed = SubResource("sb_btn_pressed")
+Button/styles/disabled = SubResource("sb_btn_disabled")
+
+; ===== Panel / PanelContainer =====
+Panel/styles/panel = SubResource("sb_panel")
+PanelContainer/styles/panel = SubResource("sb_panel")
+
+; ===== Document type variation (paper-on-dark, breaks the inverted scheme on purpose) =====
+PanelContainer/Document/base_type = "PanelContainer"
+PanelContainer/Document/styles/panel = SubResource("sb_panel_document")
+
+; ===== RichTextLabel =====
+RichTextLabel/colors/default_color = Color(0.96, 0.97, 0.92, 1)
+RichTextLabel/Document/base_type = "RichTextLabel"
+RichTextLabel/Document/colors/default_color = Color(0.07, 0.06, 0.05, 1)
+RichTextLabel/Document/fonts/normal_font = ExtResource("2_fontdoc")
+
+; ===== LineEdit (already terminal-style; preserved) =====
+LineEdit/colors/font_color = Color(0.34, 0.78, 0.42, 1)
+LineEdit/colors/caret_color = Color(0.34, 0.78, 0.42, 1)
+LineEdit/colors/selection_color = Color(0.34, 0.78, 0.42, 0.35)
+LineEdit/styles/normal = SubResource("sb_lineedit")
+LineEdit/styles/focus = SubResource("sb_lineedit")
+
+; ===== Containers =====
+HBoxContainer/constants/separation = 4
+VBoxContainer/constants/separation = 4
+
+; ===== Separators =====
+HSeparator/constants/separation = 4
+VSeparator/constants/separation = 4
+HSeparator/colors/separator_color = Color(0.45, 0.42, 0.38, 1)
+VSeparator/colors/separator_color = Color(0.45, 0.42, 0.38, 1)
+
+; ===== ProgressBar =====
+ProgressBar/colors/font_color = Color(0.96, 0.97, 0.92, 1)
+ProgressBar/styles/background = SubResource("sb_progress_bg")
+ProgressBar/styles/fill = SubResource("sb_progress_fill")
+
+; ===== ScrollBar =====
+HScrollBar/styles/scroll = SubResource("sb_scroll_track")
+HScrollBar/styles/grabber = SubResource("sb_scroll_grabber")
+VScrollBar/styles/scroll = SubResource("sb_scroll_track")
+VScrollBar/styles/grabber = SubResource("sb_scroll_grabber")
+
+; ===== CheckBox =====
+CheckBox/colors/font_color = Color(0.96, 0.97, 0.92, 1)
+CheckBox/colors/font_pressed_color = Color(0.96, 0.97, 0.92, 1)
+CheckBox/colors/font_hover_color = Color(0.96, 0.97, 0.92, 1)
+CheckBox/colors/font_disabled_color = Color(0.45, 0.42, 0.38, 1)
+
+; ===== OptionButton =====
+OptionButton/colors/font_color = Color(0.96, 0.97, 0.92, 1)
+OptionButton/colors/font_hover_color = Color(0.96, 0.97, 0.92, 1)
+OptionButton/colors/font_pressed_color = Color(0.07, 0.06, 0.05, 1)
+OptionButton/colors/font_disabled_color = Color(0.45, 0.42, 0.38, 1)
+OptionButton/styles/normal = SubResource("sb_btn_normal")
+OptionButton/styles/hover = SubResource("sb_btn_hover")
+OptionButton/styles/pressed = SubResource("sb_btn_pressed")
+OptionButton/styles/disabled = SubResource("sb_btn_disabled")

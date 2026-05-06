@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://d2p8lcjlcu5d1"]
 
-[ext_resource type="Script" path="res://scripts/m1_input_demo.gd" id="1_demo"]
-[ext_resource type="Script" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
+[ext_resource type="Script" uid="uid://bx1ni30t02kip" path="res://scripts/m1_input_demo.gd" id="1_demo"]
+[ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
 
 [node name="M1InputDemo" type="Node2D"]
 script = ExtResource("1_demo")
@@ -11,28 +11,29 @@ script = ExtResource("1_demo")
 [node name="Walls" type="Node2D" parent="."]
 
 [node name="WallTop" type="Polygon2D" parent="Walls"]
-polygon = PackedVector2Array(-400, -300, 400, -300, 400, -290, -400, -290)
 color = Color(0.5, 0.5, 0.5, 1)
+polygon = PackedVector2Array(-400, -300, 400, -300, 400, -290, -400, -290)
 
 [node name="WallBottom" type="Polygon2D" parent="Walls"]
-polygon = PackedVector2Array(-400, 290, 400, 290, 400, 300, -400, 300)
 color = Color(0.5, 0.5, 0.5, 1)
+polygon = PackedVector2Array(-400, 290, 400, 290, 400, 300, -400, 300)
 
 [node name="WallLeft" type="Polygon2D" parent="Walls"]
-polygon = PackedVector2Array(-400, -300, -390, -300, -390, 300, -400, 300)
 color = Color(0.5, 0.5, 0.5, 1)
+polygon = PackedVector2Array(-400, -300, -390, -300, -390, 300, -400, 300)
 
 [node name="WallRight" type="Polygon2D" parent="Walls"]
-polygon = PackedVector2Array(390, -300, 400, -300, 400, 300, 390, 300)
 color = Color(0.5, 0.5, 0.5, 1)
+polygon = PackedVector2Array(390, -300, 400, -300, 400, 300, 390, 300)
 
 [node name="Player" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-10, -10, 10, -10, 10, 10, -10, 10)
-color = Color(1, 1, 1, 1)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
 [node name="FeedbackOverlay" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2

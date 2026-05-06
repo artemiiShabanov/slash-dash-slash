@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Palette" load_steps=2 format=3 uid="uid://b3paltbas3sx0"]
+
+[ext_resource type="Script" path="res://scripts/resources/palette.gd" id="1_pal"]
+
+[resource]
+script = ExtResource("1_pal")
+paper_yellow = Color(0.96, 0.91, 0.74, 1)
+bone_white = Color(0.92, 0.89, 0.81, 1)
+ink_black = Color(0.07, 0.06, 0.05, 1)
+fluorescent_white = Color(0.96, 0.97, 0.92, 1)
+shadow_grey = Color(0.45, 0.42, 0.38, 1)
+dot_matrix_green = Color(0.34, 0.78, 0.42, 1)
+desk_brown = Color(0.36, 0.24, 0.16, 1)
+blood_red = Color(0.65, 0.16, 0.13, 1)
+archive_dust = Color(0.58, 0.54, 0.46, 1)
+boardroom_black = Color(0.1, 0.09, 0.1, 1)

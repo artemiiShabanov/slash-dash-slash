@@ -1,0 +1,118 @@
+[gd_scene load_steps=2 format=3 uid="uid://byuyj6b3efsfx"]
+
+[ext_resource type="Script" uid="uid://de2aeott245aq" path="res://scripts/m1_style_smoke.gd" id="1_smoke"]
+
+[node name="M1StyleSmoke" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_smoke")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.07, 0.06, 0.05, 1)
+
+[node name="Margins" type="MarginContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Root" type="VBoxContainer" parent="Margins"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margins/Root"]
+layout_mode = 2
+text = "STYLE FOUNDATION SMOKE TEST"
+
+[node name="Subtitle" type="Label" parent="Margins/Root"]
+layout_mode = 2
+text = "Every themed control + grain post-process visible below."
+
+[node name="Sep1" type="HSeparator" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="BtnNormal" type="Button" parent="Margins/Root/Buttons"]
+layout_mode = 2
+text = "Continue"
+
+[node name="BtnDisabled" type="Button" parent="Margins/Root/Buttons"]
+layout_mode = 2
+disabled = true
+text = "Locked"
+
+[node name="BtnOption" type="OptionButton" parent="Margins/Root/Buttons"]
+layout_mode = 2
+item_count = 4
+popup/item_0/text = "B"
+popup/item_0/id = 0
+popup/item_1/text = "1"
+popup/item_1/id = 1
+popup/item_2/text = "7"
+popup/item_2/id = 2
+popup/item_3/text = "13"
+popup/item_3/id = 3
+
+[node name="ChkSample" type="CheckBox" parent="Margins/Root/Buttons"]
+layout_mode = 2
+text = "Compliant"
+
+[node name="Sep2" type="HSeparator" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="Margins/Root"]
+layout_mode = 2
+placeholder_text = "> employee name..."
+
+[node name="Sep3" type="HSeparator" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="HealthLbl" type="Label" parent="Margins/Root"]
+layout_mode = 2
+text = "Health"
+
+[node name="HealthBar" type="ProgressBar" parent="Margins/Root"]
+layout_mode = 2
+value = 60.0
+
+[node name="Sep4" type="HSeparator" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="UIPanel" type="PanelContainer" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="UIRich" type="RichTextLabel" parent="Margins/Root/UIPanel"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b]NOTICE[/b]: standard UI panel with [color=#a52823]critical alert[/color] inline."
+fit_content = true
+
+[node name="Sep5" type="HSeparator" parent="Margins/Root"]
+layout_mode = 2
+
+[node name="DocPanel" type="PanelContainer" parent="Margins/Root"]
+layout_mode = 2
+theme_type_variation = &"Document"
+
+[node name="DocRich" type="RichTextLabel" parent="Margins/Root/DocPanel"]
+layout_mode = 2
+theme_type_variation = &"Document"
+bbcode_enabled = true
+text = "Form 1099-2W. The undersigned, having reviewed the standard separation procedures, hereby files notice of intent to terminate active employment effective two (2) weeks following stamp date. Initial here: ___"
+fit_content = true
+
+[node name="Footer" type="Label" parent="Margins/Root"]
+layout_mode = 2
+text = "Internal: 640x360, integer-scaled. Grain overlay active."
