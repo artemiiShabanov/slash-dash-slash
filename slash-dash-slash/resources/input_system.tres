@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="InputTuning" load_steps=2 format=3 uid="uid://b1n2puts1ngsy0"]
+
+[ext_resource type="Script" path="res://scripts/resources/input_tuning.gd" id="1_inptn"]
+
+[resource]
+script = ExtResource("1_inptn")
+swipe_min_distance = 40.0
+swipe_max_duration = 0.5
+controller_stick_deadzone = 0.2

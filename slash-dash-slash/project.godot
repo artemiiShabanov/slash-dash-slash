@@ -11,8 +11,17 @@ config_version=5
 [application]
 
 config/name="slash-dash-slash"
+run/main_scene="res://scenes/m1_input_demo.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
+
+[autoload]
+
+InputSystem="*res://scripts/input_system.gd"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
 
 [rendering]
 
