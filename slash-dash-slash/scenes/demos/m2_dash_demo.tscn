@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3 uid="uid://cj1sf2vmgxtc"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
+
+[node name="M2DashDemo" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="WallTop" type="Polygon2D" parent="Walls"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, -160, 300, -160, 300, -150, -300, -150)
+
+[node name="WallBottom" type="Polygon2D" parent="Walls"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, 150, 300, 150, 300, 160, -300, 160)
+
+[node name="WallLeft" type="Polygon2D" parent="Walls"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, -160, -290, -160, -290, 160, -300, 160)
+
+[node name="WallRight" type="Polygon2D" parent="Walls"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="FeedbackOverlay" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_overlay")

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://byuyj6b3efsfx"]
 
-[ext_resource type="Script" uid="uid://de2aeott245aq" path="res://scripts/m1_style_smoke.gd" id="1_smoke"]
+[ext_resource type="Script" uid="uid://de2aeott245aq" path="res://scripts/demos/m1_style_smoke.gd" id="1_smoke"]
 
 [node name="M1StyleSmoke" type="Control"]
 layout_mode = 3

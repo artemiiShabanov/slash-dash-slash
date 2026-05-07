@@ -1,0 +1,252 @@
+extends CharacterBody2D
+
+## Player.
+##
+## Listens to InputSystem.dash_requested and aim_changed; rotates the sprite to
+## face current aim while idle; runs a curve-driven committed dash on commit.
+## Sets InputSystem.dash_in_progress true during the dash so the input buffer
+## flushes correctly on completion (yielding zero-frame chained dashes).
+##
+## Distance and duration are derived from `tuning` plus per-key modifier
+## registries that other systems install into. Modifiers are snapshotted at
+## dash start; mid-dash mutations don't affect the in-flight motion.
+##
+## Wall collision is intentionally *not* handled here. `move_and_collide` is
+## used for stepping so a future `wall_collision_dash` spec can plug in by
+## reading the returned `KinematicCollision2D`.
+
+# ===== Signals =====
+
+signal dash_started(direction: Vector2)
+signal dash_ended(traveled: Vector2)
+
+# ===== Tunables =====
+
+const TUNING_PATH := "res://resources/dash_tuning.tres"
+
+# Floors clamping pathological modifier stacks so dashes always commit.
+const MIN_DISTANCE: float = 1.0
+const MIN_DURATION: float = 0.01
+
+@export var tuning: DashTuning
+
+# ===== Public state =====
+
+## Most recent aim direction received from the input system.
+var current_aim: Vector2 = Vector2.RIGHT
+
+## Whether a dash is currently in flight.
+var is_dashing: bool = false
+
+# ===== Internal dash state =====
+
+var _dash_direction: Vector2 = Vector2.RIGHT
+var _dash_elapsed: float = 0.0
+var _dash_duration_snapshot: float = 0.12
+var _dash_distance_snapshot: float = 80.0
+var _dash_start_position: Vector2 = Vector2.ZERO
+
+# Baked cumulative integral of `speed_curve` over [0,1], plus its total.
+# Sampled per-frame to compute "where the dash should be at this normalized t".
+var _curve_baked: PackedFloat32Array = PackedFloat32Array()
+var _curve_total_integral: float = 1.0
+
+# ===== Modifier registries =====
+# Each entry: { "additive": float, "multiplicative": float }
+# Stat formula: effective = (base + Σadditive) * Πmultiplicative, clamped to MIN.
+
+var _distance_mods: Dictionary = {}
+var _duration_mods: Dictionary = {}
+
+# ===== Trail =====
+
+@onready var trail: Line2D = $Trail
+
+# Held reference so a new dash can kill an in-flight fade. Without this, the
+# fade tween would overwrite the new dash's freshly-reset alpha and clear its
+# trail points mid-dash.
+var _trail_fade_tween: Tween = null
+
+# ===== Lifecycle =====
+
+func _ready() -> void:
+	if tuning == null:
+		tuning = load(TUNING_PATH) as DashTuning
+		if tuning == null:
+			push_error("Player: failed to load DashTuning at %s; using defaults." % TUNING_PATH)
+			tuning = DashTuning.new()
+
+	# Trail draws in world space — points stay where they were dropped even as
+	# the player moves on through them.
+	trail.top_level = true
+	trail.global_position = Vector2.ZERO
+	trail.global_rotation = 0.0
+	trail.clear_points()
+	trail.default_color = tuning.trail_color
+	trail.modulate.a = 1.0
+
+	InputSystem.dash_requested.connect(_on_dash_requested)
+	InputSystem.aim_changed.connect(_on_aim_changed)
+	# Defensive: never inherit a stuck dash flag from a previous run.
+	InputSystem.dash_in_progress = false
+
+func _physics_process(delta: float) -> void:
+	# Push player position so InputSystem can compute mouse-relative aim.
+	InputSystem.player_world_position = global_position
+
+	if is_dashing:
+		_advance_dash(delta)
+	else:
+		_update_idle_rotation()
+
+# ===== Input handlers =====
+
+func _on_aim_changed(direction: Vector2) -> void:
+	current_aim = direction
+
+func _on_dash_requested(direction: Vector2) -> void:
+	# We only start a dash when idle. The input system buffers commits that
+	# arrive mid-dash and re-emits them on dash_in_progress -> false.
+	if is_dashing:
+		return
+	_start_dash(direction)
+
+# ===== Dash lifecycle =====
+
+func _start_dash(direction: Vector2) -> void:
+	is_dashing = true
+	_dash_direction = direction.normalized() if direction.length() > 0.0 else current_aim
+	_dash_elapsed = 0.0
+	_dash_distance_snapshot = _compute_effective(tuning.base_dash_distance, _distance_mods, MIN_DISTANCE)
+	_dash_duration_snapshot = _compute_effective(tuning.base_dash_duration, _duration_mods, MIN_DURATION)
+	_dash_start_position = global_position
+	_bake_speed_curve()
+	rotation = _dash_direction.angle()
+
+	# Kill any in-flight fade tween from the previous dash so it can't stomp
+	# on this dash's alpha or clear our points mid-flight.
+	if _trail_fade_tween != null and _trail_fade_tween.is_valid():
+		_trail_fade_tween.kill()
+	_trail_fade_tween = null
+
+	# Reset trail visuals and seed the first point at the dash origin.
+	trail.modulate.a = 1.0
+	trail.clear_points()
+	trail.add_point(global_position)
+
+	InputSystem.dash_in_progress = true
+	dash_started.emit(_dash_direction)
+
+func _advance_dash(delta: float) -> void:
+	_dash_elapsed += delta
+	var t: float = clampf(_dash_elapsed / _dash_duration_snapshot, 0.0, 1.0)
+	var integral: float = _sample_baked_integral(t)
+	var fraction: float = integral / _curve_total_integral if _curve_total_integral > 0.0 else t
+	var target_position: Vector2 = _dash_start_position + _dash_direction * _dash_distance_snapshot * fraction
+	var step: Vector2 = target_position - global_position
+	# Result intentionally ignored here; wall_collision_dash will read it later.
+	move_and_collide(step)
+
+	_append_trail_point(global_position)
+
+	if t >= 1.0:
+		_end_dash()
+
+func _end_dash() -> void:
+	var traveled: Vector2 = global_position - _dash_start_position
+	is_dashing = false
+	# Flushing the input buffer: setting dash_in_progress to false in the
+	# InputSystem's setter re-emits any queued dash_requested *synchronously*,
+	# which can re-enter `_start_dash` and flip `is_dashing` back to true
+	# before this function returns. Check for that below before scheduling
+	# the fade — we don't want to fade a dash that just started.
+	InputSystem.dash_in_progress = false
+	dash_ended.emit(traveled)
+
+	# If a chained dash kicked off via the buffer flush, leave its trail alone.
+	if is_dashing:
+		return
+
+	# Fade the trail out smoothly. Cleared after fade completes so a fresh
+	# dash starts with no leftover ghost points.
+	_trail_fade_tween = create_tween()
+	_trail_fade_tween.tween_property(trail, "modulate:a", 0.0, tuning.trail_fade_duration)
+	_trail_fade_tween.tween_callback(trail.clear_points)
+
+# ===== Trail =====
+
+func _append_trail_point(p: Vector2) -> void:
+	trail.add_point(p)
+	# Keep the line bounded — drop oldest points once we exceed the cap.
+	while trail.get_point_count() > tuning.trail_max_points:
+		trail.remove_point(0)
+
+# ===== Idle rotation =====
+
+func _update_idle_rotation() -> void:
+	if current_aim.length() <= 0.0:
+		return
+	rotation = lerp_angle(rotation, current_aim.angle(), tuning.idle_rotation_lerp)
+
+# ===== Modifier API =====
+
+func set_dash_distance_modifier(key: StringName, additive: float = 0.0, multiplicative: float = 1.0) -> void:
+	_distance_mods[key] = {"additive": additive, "multiplicative": multiplicative}
+
+func clear_dash_distance_modifier(key: StringName) -> void:
+	_distance_mods.erase(key)
+
+func set_dash_duration_modifier(key: StringName, additive: float = 0.0, multiplicative: float = 1.0) -> void:
+	_duration_mods[key] = {"additive": additive, "multiplicative": multiplicative}
+
+func clear_dash_duration_modifier(key: StringName) -> void:
+	_duration_mods.erase(key)
+
+func _compute_effective(base: float, mods: Dictionary, min_value: float) -> float:
+	var additive_sum: float = 0.0
+	var multiplicative_product: float = 1.0
+	for entry in mods.values():
+		additive_sum += float(entry.additive)
+		multiplicative_product *= float(entry.multiplicative)
+	return maxf(min_value, (base + additive_sum) * multiplicative_product)
+
+# ===== Curve baking =====
+
+const CURVE_SAMPLES: int = 64
+
+func _bake_speed_curve() -> void:
+	# Build a cumulative-integral table for `speed_curve` so we can resolve
+	# "fraction of dash distance covered by time t" without per-frame integrals.
+	_curve_baked.resize(CURVE_SAMPLES + 1)
+	_curve_baked[0] = 0.0
+	_curve_total_integral = 0.0
+	if tuning.speed_curve == null:
+		# Fallback: linear unit ramp. Keeps the dash functional even if the
+		# curve resource is missing.
+		for i in CURVE_SAMPLES + 1:
+			_curve_baked[i] = float(i) / float(CURVE_SAMPLES)
+		_curve_total_integral = 1.0
+		return
+	var curve: Curve = tuning.speed_curve
+	for i in CURVE_SAMPLES:
+		var t1: float = float(i) / float(CURVE_SAMPLES)
+		var t2: float = float(i + 1) / float(CURVE_SAMPLES)
+		var avg: float = absf(curve.sample(t1) + curve.sample(t2)) * 0.5
+		_curve_total_integral += avg * (t2 - t1)
+		_curve_baked[i + 1] = _curve_total_integral
+	if _curve_total_integral <= 0.0:
+		# Pathological curve — fall back to linear ramp.
+		push_warning("Player: dash speed_curve integrates to <=0; falling back to linear.")
+		for i in CURVE_SAMPLES + 1:
+			_curve_baked[i] = float(i) / float(CURVE_SAMPLES)
+		_curve_total_integral = 1.0
+
+func _sample_baked_integral(t: float) -> float:
+	var n: int = _curve_baked.size() - 1
+	if n <= 0:
+		return t
+	var idx_f: float = clampf(t, 0.0, 1.0) * float(n)
+	var i0: int = int(idx_f)
+	var i1: int = mini(i0 + 1, n)
+	var f: float = idx_f - float(i0)
+	return lerpf(_curve_baked[i0], _curve_baked[i1], f)

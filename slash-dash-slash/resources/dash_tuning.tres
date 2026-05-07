@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="DashTuning" load_steps=3 format=3 uid="uid://bgqmkn601ssci"]
+
+[ext_resource type="Script" uid="uid://djoktj75xckep" path="res://scripts/resources/dash_tuning.gd" id="1_dtune"]
+
+[sub_resource type="Curve" id="Curve_easeout"]
+_data = [Vector2(0, 1), 0.0, -1.5, 0, 0, Vector2(1, 0), -0.1, 0.0, 0, 0]
+point_count = 2
+
+[resource]
+script = ExtResource("1_dtune")
+base_dash_distance = 80.0
+base_dash_duration = 0.12
+speed_curve = SubResource("Curve_easeout")
+idle_rotation_lerp = 0.5
+trail_max_points = 32
+trail_fade_duration = 0.25
+trail_color = Color(0.34, 0.78, 0.42, 1)

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://d2p8lcjlcu5d1"]
 
-[ext_resource type="Script" uid="uid://bx1ni30t02kip" path="res://scripts/m1_input_demo.gd" id="1_demo"]
+[ext_resource type="Script" uid="uid://bx1ni30t02kip" path="res://scripts/demos/m1_input_demo.gd" id="1_demo"]
 [ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
 
 [node name="M1InputDemo" type="Node2D"]
