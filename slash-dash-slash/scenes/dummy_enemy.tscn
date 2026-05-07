@@ -14,5 +14,12 @@ script = ExtResource("1_dummy")
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 color = Color(0.65, 0.16, 0.13, 1)
 
+[node name="Arrow" type="Polygon2D" parent="."]
+; Triangle pointing right when rotation = 0; tip protrudes past the body so
+; the facing direction is readable at a glance. _ready rotates this to match
+; the `facing` export.
+polygon = PackedVector2Array(4, -3, 11, 0, 4, 3)
+color = Color(0.96, 0.97, 0.92, 1)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("cs_dummy")
