@@ -20,6 +20,11 @@ extends CharacterBody2D
 signal dash_started(direction: Vector2)
 signal dash_ended(traveled: Vector2)
 
+## Emitted when an in-flight dash is interrupted by a wall. Fires before
+## `dash_ended`, with the contact point and surface normal from the
+## `KinematicCollision2D`.
+signal wall_hit(position: Vector2, normal: Vector2)
+
 # ===== Tunables =====
 
 const TUNING_PATH := "res://resources/dash_tuning.tres"
@@ -144,10 +149,15 @@ func _advance_dash(delta: float) -> void:
 	var fraction: float = integral / _curve_total_integral if _curve_total_integral > 0.0 else t
 	var target_position: Vector2 = _dash_start_position + _dash_direction * _dash_distance_snapshot * fraction
 	var step: Vector2 = target_position - global_position
-	# Result intentionally ignored here; wall_collision_dash will read it later.
-	move_and_collide(step)
+	var collision: KinematicCollision2D = move_and_collide(step)
 
+	# Append trail point post-move so the wall position becomes the trail's tail.
 	_append_trail_point(global_position)
+
+	if collision != null:
+		wall_hit.emit(collision.get_position(), collision.get_normal())
+		_end_dash()
+		return
 
 	if t >= 1.0:
 		_end_dash()

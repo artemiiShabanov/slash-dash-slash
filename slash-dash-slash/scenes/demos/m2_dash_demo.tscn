@@ -9,20 +9,40 @@
 
 [node name="Walls" type="Node2D" parent="."]
 
-[node name="WallTop" type="Polygon2D" parent="Walls"]
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallTop"]
 color = Color(0.45, 0.42, 0.38, 1)
 polygon = PackedVector2Array(-300, -160, 300, -160, 300, -150, -300, -150)
 
-[node name="WallBottom" type="Polygon2D" parent="Walls"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallTop"]
+polygon = PackedVector2Array(-300, -160, 300, -160, 300, -150, -300, -150)
+
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallBottom"]
 color = Color(0.45, 0.42, 0.38, 1)
 polygon = PackedVector2Array(-300, 150, 300, 150, 300, 160, -300, 160)
 
-[node name="WallLeft" type="Polygon2D" parent="Walls"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallBottom"]
+polygon = PackedVector2Array(-300, 150, 300, 150, 300, 160, -300, 160)
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallLeft"]
 color = Color(0.45, 0.42, 0.38, 1)
 polygon = PackedVector2Array(-300, -160, -290, -160, -290, 160, -300, 160)
 
-[node name="WallRight" type="Polygon2D" parent="Walls"]
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallLeft"]
+polygon = PackedVector2Array(-300, -160, -290, -160, -290, 160, -300, 160)
+
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallRight"]
 color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
 polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
