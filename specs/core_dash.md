@@ -1,6 +1,6 @@
 # core-dash
 
-**Status:** Shipped
+**Status:** Synced 2026-05-07
 
 ## Goal
 
@@ -43,7 +43,10 @@ These are **base** values. Effective per-dash values are computed from base + re
 - `idle_rotation_lerp: float` — smoothing factor (0..1) applied per-frame to the sprite's facing rotation while idle. `1.0` = snaps instantly to aim; lower = smoother but laggy. Default ~0.5.
 - `trail_max_points: int` — max points in the fading trail
 - `trail_fade_duration: float` — seconds for a trail point to fade to invisible
-- `trail_color: Color` — base trail tint (palette-friendly)
+- `trail_color: Color` — reposition (non-slash) trail tint
+- `trail_width: float` — reposition trail line width
+- `slash_trail_color: Color` — slash trail tint (default palette `blood_red`)
+- `slash_trail_width: float` — slash trail line width (wider than reposition)
 
 ### Modifiers (forward-looking)
 
@@ -83,7 +86,7 @@ Body-level config that's not specific to the dash itself. Created here so future
 
 ### Trail
 
-`Line2D` child of the player, world-space (not transform-relative). On dash, points are appended to it each physics frame at the player's current position. A small per-point timer fades alpha and removes points after `trail_fade_duration`. Uses `trail_color` from the tuning. Width and gradient are visual constants on the Line2D node — not tunables for v1.
+`Line2D` child of the player, world-space (not transform-relative). On dash, points are appended to it each physics frame at the player's current position. The whole line fades on dash end via a tracked tween (killed if a new dash starts mid-fade so chained-dash trails aren't stomped). Trail style is picked **per dash** at `_start_dash`: if the sword fires (slash), use `slash_trail_color` + `slash_trail_width`; otherwise use `trail_color` + `trail_width`. The "was-slash" flag is captured before the weapon-fire hook flips `is_weapon_loaded`.
 
 ## Edge cases & out-of-scope
 
@@ -110,5 +113,5 @@ Body-level config that's not specific to the dash itself. Created here so future
   - emits `dash_started` / `dash_ended`
   - sets `InputSystem.dash_in_progress` true on dash start, false on dash end
 - [x] Build `scenes/player.tscn`: `CharacterBody2D` root, placeholder visual (Polygon2D arrow shape so rotation is readable), `Line2D` for trail, `CollisionShape2D` for the body radius
-- [x] Build M2 demo scene `scenes/m2_dash_demo.tscn`: an arena with walls (sized for the 640×360 internal frame), a `Player` instance at center, a `Camera2D`, and an `InputFeedbackOverlay` reused from M1. Set as the project's main scene
+- [x] Build M2 demo scene `scenes/demos/m2_dash_demo.tscn`: an arena with walls (sized for the 640×360 internal frame), a `Player` instance at center, a `Camera2D`, and an `InputFeedbackOverlay` reused from M1. Set as the project's main scene
 - [x] Smoke-test verification: open the demo, confirm the player rotates smoothly toward the cursor / stick / WASD aim, that swipes/clicks/face-button-presses fire dashes that travel the configured distance with the configured curve, that chained dash inputs flow seamlessly, and that the trail fades correctly

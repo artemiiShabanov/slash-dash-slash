@@ -31,6 +31,17 @@ extends Resource
 ## Seconds for the trail to fade from full to invisible after a dash ends.
 @export var trail_fade_duration: float = 0.25
 
-## Base trail tint. Default = palette `dot_matrix_green` to read as a phosphor
-## streak under the CRT post-process.
+## Reposition (non-slash) trail tint. Default = palette `dot_matrix_green` to
+## read as a phosphor streak under the CRT post-process.
 @export var trail_color: Color = Color(0.34, 0.78, 0.42, 1.0)
+
+## Reposition trail line width (px in 640x360 internal frame).
+@export var trail_width: float = 2.0
+
+## Slash trail tint — used when the dash fires the sword. Default = palette
+## `blood_red` to read as a weapon strike vs. the green reposition phosphor.
+@export var slash_trail_color: Color = Color(0.65, 0.16, 0.13, 1.0)
+
+## Slash trail line width — wider than reposition so a slash visually carries
+## more weight even before juice/SFX layers land.
+@export var slash_trail_width: float = 4.0

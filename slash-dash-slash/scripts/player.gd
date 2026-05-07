@@ -25,15 +25,29 @@ signal dash_ended(traveled: Vector2)
 ## `KinematicCollision2D`.
 signal wall_hit(position: Vector2, normal: Vector2)
 
+## Sword fired this dash. Hit-detection consumes this; gem procs piggyback later.
+signal weapon_fired(direction: Vector2)
+
+## Sword transitioned reloading -> loaded (cooldown done AND stamina >= 1).
+signal weapon_loaded
+
+## Sword transitioned loaded -> reloading.
+signal weapon_unloaded
+
+## Stamina changed (drain or regen). UI listens here.
+signal stamina_changed(current: int, max: int)
+
 # ===== Tunables =====
 
 const TUNING_PATH := "res://resources/dash_tuning.tres"
+const WEAPON_TUNING_PATH := "res://resources/weapon_tuning.tres"
 
 # Floors clamping pathological modifier stacks so dashes always commit.
 const MIN_DISTANCE: float = 1.0
 const MIN_DURATION: float = 0.01
 
 @export var tuning: DashTuning
+@export var weapon_tuning: WeaponTuning
 
 # ===== Public state =====
 
@@ -42,6 +56,17 @@ var current_aim: Vector2 = Vector2.RIGHT
 
 ## Whether a dash is currently in flight.
 var is_dashing: bool = false
+
+## True when the next dash will fire the sword (cooldown elapsed AND stamina >= 1).
+var is_weapon_loaded: bool = false
+
+## Current stamina, in [0, weapon_tuning.max_stamina].
+var stamina: int = 0
+
+# ===== Internal weapon state =====
+
+var _cooldown_remaining: float = 0.0
+var _regen_accumulator: float = 0.0
 
 # ===== Internal dash state =====
 
@@ -66,6 +91,7 @@ var _duration_mods: Dictionary = {}
 # ===== Trail =====
 
 @onready var trail: Line2D = $Trail
+@onready var body: Polygon2D = $Body
 
 # Held reference so a new dash can kill an in-flight fade. Without this, the
 # fade tween would overwrite the new dash's freshly-reset alpha and clear its
@@ -95,9 +121,29 @@ func _ready() -> void:
 	# Defensive: never inherit a stuck dash flag from a previous run.
 	InputSystem.dash_in_progress = false
 
+	# Weapon init.
+	if weapon_tuning == null:
+		weapon_tuning = load(WEAPON_TUNING_PATH) as WeaponTuning
+		if weapon_tuning == null:
+			push_error("Player: failed to load WeaponTuning at %s; using defaults." % WEAPON_TUNING_PATH)
+			weapon_tuning = WeaponTuning.new()
+	stamina = weapon_tuning.max_stamina
+	_cooldown_remaining = 0.0
+	_regen_accumulator = 0.0
+	is_weapon_loaded = true
+	_apply_loaded_modulate(true)
+	# Defer initial signal emit until after children (e.g., StaminaPips) have
+	# finished their own _ready and connected. Children's _ready runs first,
+	# so by the time we get here they're listening; deferring keeps things
+	# strict-ordered if anyone connects via call_deferred themselves.
+	call_deferred("emit_signal", "stamina_changed", stamina, weapon_tuning.max_stamina)
+	call_deferred("emit_signal", "weapon_loaded")
+
 func _physics_process(delta: float) -> void:
 	# Push player position so InputSystem can compute mouse-relative aim.
 	InputSystem.player_world_position = global_position
+
+	_tick_weapon(delta)
 
 	if is_dashing:
 		_advance_dash(delta)
@@ -119,6 +165,14 @@ func _on_dash_requested(direction: Vector2) -> void:
 # ===== Dash lifecycle =====
 
 func _start_dash(direction: Vector2) -> void:
+	# Fire the sword at dash commit if loaded. Whether the dash actually contacts
+	# an enemy is hit-detection's job; here we just consume cooldown + stamina.
+	# Capture before _fire_weapon flips is_weapon_loaded so the trail can pick
+	# the right color/width.
+	var was_slash: bool = is_weapon_loaded
+	if was_slash:
+		_fire_weapon(direction.normalized() if direction.length() > 0.0 else current_aim)
+
 	is_dashing = true
 	_dash_direction = direction.normalized() if direction.length() > 0.0 else current_aim
 	_dash_elapsed = 0.0
@@ -133,6 +187,15 @@ func _start_dash(direction: Vector2) -> void:
 	if _trail_fade_tween != null and _trail_fade_tween.is_valid():
 		_trail_fade_tween.kill()
 	_trail_fade_tween = null
+
+	# Per-dash trail style: slashes get a wider blood-red line; repositions get
+	# the narrower phosphor-green line.
+	if was_slash:
+		trail.default_color = tuning.slash_trail_color
+		trail.width = tuning.slash_trail_width
+	else:
+		trail.default_color = tuning.trail_color
+		trail.width = tuning.trail_width
 
 	# Reset trail visuals and seed the first point at the dash origin.
 	trail.modulate.a = 1.0
@@ -182,6 +245,44 @@ func _end_dash() -> void:
 	_trail_fade_tween = create_tween()
 	_trail_fade_tween.tween_property(trail, "modulate:a", 0.0, tuning.trail_fade_duration)
 	_trail_fade_tween.tween_callback(trail.clear_points)
+
+# ===== Weapon =====
+
+func _fire_weapon(dir: Vector2) -> void:
+	stamina = maxi(0, stamina - 1)
+	_cooldown_remaining = weapon_tuning.cooldown_duration
+	_regen_accumulator = 0.0
+	is_weapon_loaded = false
+	_apply_loaded_modulate(false)
+	weapon_fired.emit(dir)
+	weapon_unloaded.emit()
+	stamina_changed.emit(stamina, weapon_tuning.max_stamina)
+
+func _tick_weapon(delta: float) -> void:
+	# Cooldown countdown.
+	if _cooldown_remaining > 0.0:
+		_cooldown_remaining = maxf(0.0, _cooldown_remaining - delta)
+
+	# Stamina regen — continuous, runs even mid-cooldown.
+	if stamina < weapon_tuning.max_stamina:
+		_regen_accumulator += delta
+		while _regen_accumulator >= weapon_tuning.stamina_regen_interval and stamina < weapon_tuning.max_stamina:
+			_regen_accumulator -= weapon_tuning.stamina_regen_interval
+			stamina += 1
+			stamina_changed.emit(stamina, weapon_tuning.max_stamina)
+		if stamina >= weapon_tuning.max_stamina:
+			_regen_accumulator = 0.0
+
+	# Transition reloading -> loaded the moment both gates clear.
+	if not is_weapon_loaded and _cooldown_remaining <= 0.0 and stamina >= 1:
+		is_weapon_loaded = true
+		_apply_loaded_modulate(true)
+		weapon_loaded.emit()
+
+func _apply_loaded_modulate(is_loaded: bool) -> void:
+	if body == null:
+		return
+	body.modulate = weapon_tuning.loaded_tint_color if is_loaded else Color(1, 1, 1, 1)
 
 # ===== Trail =====
 
