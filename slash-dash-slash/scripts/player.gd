@@ -37,10 +37,15 @@ signal weapon_unloaded
 ## Stamina changed (drain or regen). UI listens here.
 signal stamina_changed(current: int, max: int)
 
+## A slash dash made contact with an enemy. Per-dash, per-enemy (no double-tap).
+## Future systems (gem procs, juice, sound) listen here.
+signal hit_landed(target: Node, damage: int, position: Vector2, dash_direction: Vector2)
+
 # ===== Tunables =====
 
 const TUNING_PATH := "res://resources/dash_tuning.tres"
 const WEAPON_TUNING_PATH := "res://resources/weapon_tuning.tres"
+const HIT_TUNING_PATH := "res://resources/hit_tuning.tres"
 
 # Floors clamping pathological modifier stacks so dashes always commit.
 const MIN_DISTANCE: float = 1.0
@@ -48,6 +53,7 @@ const MIN_DURATION: float = 0.01
 
 @export var tuning: DashTuning
 @export var weapon_tuning: WeaponTuning
+@export var hit_tuning: HitTuning
 
 # ===== Public state =====
 
@@ -67,6 +73,11 @@ var stamina: int = 0
 
 var _cooldown_remaining: float = 0.0
 var _regen_accumulator: float = 0.0
+
+# ===== Internal hit-detection state =====
+
+# Set of targets already hit during the current dash; reset on weapon_fired.
+var _hit_this_dash: Dictionary = {}
 
 # ===== Internal dash state =====
 
@@ -92,6 +103,8 @@ var _duration_mods: Dictionary = {}
 
 @onready var trail: Line2D = $Trail
 @onready var body: Polygon2D = $Body
+@onready var hit_area: Area2D = $HitArea
+@onready var hit_area_shape: CollisionShape2D = $HitArea/HitAreaShape
 
 # Held reference so a new dash can kill an in-flight fade. Without this, the
 # fade tween would overwrite the new dash's freshly-reset alpha and clear its
@@ -138,6 +151,18 @@ func _ready() -> void:
 	# strict-ordered if anyone connects via call_deferred themselves.
 	call_deferred("emit_signal", "stamina_changed", stamina, weapon_tuning.max_stamina)
 	call_deferred("emit_signal", "weapon_loaded")
+
+	# Hit-detection init.
+	if hit_tuning == null:
+		hit_tuning = load(HIT_TUNING_PATH) as HitTuning
+		if hit_tuning == null:
+			push_error("Player: failed to load HitTuning at %s; using defaults." % HIT_TUNING_PATH)
+			hit_tuning = HitTuning.new()
+	_apply_hit_radius()
+	hit_area.monitoring = false
+	hit_area.area_entered.connect(_on_hit_area_area_entered)
+	weapon_fired.connect(_on_weapon_fired_for_hit)
+	dash_ended.connect(_on_dash_ended_for_hit)
 
 func _physics_process(delta: float) -> void:
 	# Push player position so InputSystem can compute mouse-relative aim.
@@ -283,6 +308,55 @@ func _apply_loaded_modulate(is_loaded: bool) -> void:
 	if body == null:
 		return
 	body.modulate = weapon_tuning.loaded_tint_color if is_loaded else Color(1, 1, 1, 1)
+
+# ===== Hit detection =====
+
+func _apply_hit_radius() -> void:
+	# Read body radius from the existing CollisionShape2D so the player scene
+	# stays the source of truth for body size.
+	var body_radius: float = 6.0
+	var body_shape := $CollisionShape2D as CollisionShape2D
+	if body_shape != null and body_shape.shape is CircleShape2D:
+		body_radius = (body_shape.shape as CircleShape2D).radius
+	if hit_area_shape.shape is CircleShape2D:
+		(hit_area_shape.shape as CircleShape2D).radius = body_radius + hit_tuning.hit_radius_offset
+
+func _on_weapon_fired_for_hit(_direction: Vector2) -> void:
+	_hit_this_dash.clear()
+	hit_area.monitoring = true
+	# Catch enemies already overlapping the HitArea (Godot's area_entered only
+	# fires for transitions). Defer to next physics frame so monitoring takes
+	# effect first.
+	_check_initial_overlaps_async()
+
+func _on_dash_ended_for_hit(_traveled: Vector2) -> void:
+	hit_area.monitoring = false
+
+func _on_hit_area_area_entered(area: Area2D) -> void:
+	_try_hit(area)
+
+func _check_initial_overlaps_async() -> void:
+	await get_tree().physics_frame
+	if not hit_area.monitoring:
+		return  # dash already ended (e.g., zero-distance wall hit)
+	for area in hit_area.get_overlapping_areas():
+		_try_hit(area)
+
+func _try_hit(target: Node) -> void:
+	# Guards in order: still dashing (HitArea may flicker on the boundary),
+	# valid node, registered as an enemy, not already hit this dash.
+	if not is_dashing:
+		return
+	if target == null or not is_instance_valid(target):
+		return
+	if not target.is_in_group("enemy"):
+		return
+	if _hit_this_dash.has(target):
+		return
+	_hit_this_dash[target] = true
+	if target.has_method("take_dash_hit"):
+		target.take_dash_hit(hit_tuning.base_damage, _dash_direction)
+	hit_landed.emit(target, hit_tuning.base_damage, target.global_position, _dash_direction)
 
 # ===== Trail =====
 

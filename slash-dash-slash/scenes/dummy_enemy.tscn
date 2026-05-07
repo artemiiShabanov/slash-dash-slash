@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/dummy_enemy.gd" id="1_dummy"]
+
+[sub_resource type="CircleShape2D" id="cs_dummy"]
+radius = 8.0
+
+[node name="DummyEnemy" type="Area2D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_dummy")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+color = Color(0.65, 0.16, 0.13, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("cs_dummy")

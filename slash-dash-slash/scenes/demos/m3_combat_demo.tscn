@@ -1,0 +1,73 @@
+[gd_scene load_steps=4 format=3 uid="uid://dh7g6fuaexaj1"]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
+[ext_resource type="PackedScene" path="res://scenes/dummy_enemy.tscn" id="3_dummy"]
+
+[node name="M3CombatDemo" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="WallTop" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallTop"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, -160, 300, -160, 300, -150, -300, -150)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallTop"]
+polygon = PackedVector2Array(-300, -160, 300, -160, 300, -150, -300, -150)
+
+[node name="WallBottom" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallBottom"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, 150, 300, 150, 300, 160, -300, 160)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallBottom"]
+polygon = PackedVector2Array(-300, 150, 300, 150, 300, 160, -300, 160)
+
+[node name="WallLeft" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallLeft"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-300, -160, -290, -160, -290, 160, -300, 160)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallLeft"]
+polygon = PackedVector2Array(-300, -160, -290, -160, -290, 160, -300, 160)
+
+[node name="WallRight" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallRight"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
+polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="DummyA" parent="Enemies" instance=ExtResource("3_dummy")]
+position = Vector2(-120, -60)
+
+[node name="DummyB" parent="Enemies" instance=ExtResource("3_dummy")]
+position = Vector2(120, -60)
+
+[node name="DummyC" parent="Enemies" instance=ExtResource("3_dummy")]
+position = Vector2(-60, 80)
+
+[node name="DummyD" parent="Enemies" instance=ExtResource("3_dummy")]
+position = Vector2(80, 80)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="FeedbackOverlay" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("2_overlay")
