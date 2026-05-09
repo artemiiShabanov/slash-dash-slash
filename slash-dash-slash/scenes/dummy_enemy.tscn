@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/dummy_enemy.gd" id="1_dummy"]
+[ext_resource type="Resource" path="res://resources/dummy_stats.tres" id="2_stats"]
 
 [sub_resource type="CircleShape2D" id="cs_dummy"]
 radius = 8.0
@@ -9,6 +10,7 @@ radius = 8.0
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_dummy")
+stats = ExtResource("2_stats")
 
 [node name="Visual" type="Polygon2D" parent="."]
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)

@@ -2,24 +2,17 @@ extends Area2D
 class_name DummyEnemy
 
 ## Placeholder enemy for the M3 combat smoke test.
-## Replaced by real enemy specs in M4 (will use an EnemyStats resource for
-## these fields instead of per-instance @exports).
+## Stats now sourced from an `EnemyStats` resource per `enemy-stats-resource`;
+## per-instance runtime state (facing, health) stays here.
 
 const FLASH_FRONT: Color = Color(1.3, 1.3, 1.3, 1.0)
 const FLASH_BACK: Color = Color(3.0, 3.0, 3.0, 1.0)
 const FLASH_FADE_DURATION: float = 0.15
 
-@export var max_health: int = 3
+@export var stats: EnemyStats
 
-## Direction this enemy is facing. The dash-direction-vs-facing dot product
-## decides whether incoming damage applies front_armor or back_armor.
+## Direction this enemy is facing. Per-instance runtime state, not template.
 @export var facing: Vector2 = Vector2.RIGHT
-
-## Damage reduction in [0, 1] when hit from the front.
-@export_range(0.0, 1.0) var armor_front: float = 0.9
-
-## Damage reduction in [0, 1] when hit from the back.
-@export_range(0.0, 1.0) var armor_back: float = 0.0
 
 @onready var visual: Polygon2D = $Visual
 @onready var arrow: Polygon2D = $Arrow
@@ -29,9 +22,11 @@ var _flash_tween: Tween = null
 
 func _ready() -> void:
 	add_to_group("enemy")
-	health = max_health
+	if stats == null:
+		push_warning("DummyEnemy: stats is null; using default EnemyStats.")
+		stats = EnemyStats.new()
+	health = stats.max_health
 	visual.modulate = Color(1, 1, 1, 1)
-	# Orient the visible facing arrow.
 	if facing.length() > 0.0:
 		arrow.rotation = facing.angle()
 
@@ -41,7 +36,7 @@ func _ready() -> void:
 ## without recomputing the side itself.
 func take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary:
 	var is_back_hit: bool = facing.length() > 0.0 and dash_direction.dot(facing) > 0.0
-	var armor: float = armor_back if is_back_hit else armor_front
+	var armor: float = stats.armor_back if is_back_hit else stats.armor_front
 	var final_damage: int = maxi(0, roundi(float(damage) * (1.0 - armor)))
 	health -= final_damage
 	_flash(FLASH_BACK if is_back_hit else FLASH_FRONT)
