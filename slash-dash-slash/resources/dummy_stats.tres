@@ -1,6 +1,7 @@
-[gd_resource type="Resource" script_class="EnemyStats" load_steps=2 format=3 uid="uid://clwq83bcv4a3y"]
+[gd_resource type="Resource" script_class="EnemyStats" load_steps=3 format=3 uid="uid://clwq83bcv4a3y"]
 
 [ext_resource type="Script" path="res://scripts/resources/enemy_stats.gd" id="1_estats"]
+[ext_resource type="Resource" path="res://resources/abilities/log_ability.tres" id="2_log"]
 
 [resource]
 script = ExtResource("1_estats")
@@ -13,3 +14,4 @@ rotation_speed = 0.0
 armor_front = 0.9
 armor_back = 0.0
 can_go_through_walls = false
+abilities = Array[EnemyAbility]([ExtResource("2_log")])

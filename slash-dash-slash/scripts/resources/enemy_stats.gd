@@ -34,3 +34,8 @@ extends Resource
 
 ## When true, the enemy's collision/movement skips wall blocking.
 @export var can_go_through_walls: bool = false
+
+## Composable behaviors attached to this enemy. The dispatcher on the enemy
+## node iterates this array and calls hooks (on_spawn, on_hit, on_tick,
+## on_death). See `enemy-ability-base` spec.
+@export var abilities: Array[EnemyAbility] = []

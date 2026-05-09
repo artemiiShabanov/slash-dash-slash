@@ -2,8 +2,8 @@ extends Area2D
 class_name DummyEnemy
 
 ## Placeholder enemy for the M3 combat smoke test.
-## Stats now sourced from an `EnemyStats` resource per `enemy-stats-resource`;
-## per-instance runtime state (facing, health) stays here.
+## Stats sourced from an `EnemyStats` resource per `enemy-stats-resource`.
+## Composable abilities iterated per `enemy-ability-base`.
 
 const FLASH_FRONT: Color = Color(1.3, 1.3, 1.3, 1.0)
 const FLASH_BACK: Color = Color(3.0, 3.0, 3.0, 1.0)
@@ -29,6 +29,10 @@ func _ready() -> void:
 	visual.modulate = Color(1, 1, 1, 1)
 	if facing.length() > 0.0:
 		arrow.rotation = facing.angle()
+	_dispatch_on_spawn()
+
+func _physics_process(delta: float) -> void:
+	_dispatch_on_tick(delta)
 
 ## Player calls this on contact during a slash dash. Side is decided by the
 ## sign of the dot product between the dash direction and the enemy's facing.
@@ -40,7 +44,9 @@ func take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary:
 	var final_damage: int = maxi(0, roundi(float(damage) * (1.0 - armor)))
 	health -= final_damage
 	_flash(FLASH_BACK if is_back_hit else FLASH_FRONT)
+	_dispatch_on_hit(final_damage, dash_direction, is_back_hit)
 	if health <= 0:
+		_dispatch_on_death()
 		queue_free()
 	return {"final_damage": final_damage, "is_back_hit": is_back_hit}
 
@@ -50,3 +56,33 @@ func _flash(color: Color) -> void:
 	visual.modulate = color
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(visual, "modulate", Color(1, 1, 1, 1), FLASH_FADE_DURATION)
+
+# ===== Ability dispatchers =====
+
+func _dispatch_on_spawn() -> void:
+	if stats == null:
+		return
+	for ability in stats.abilities:
+		if ability != null:
+			ability.on_spawn(self)
+
+func _dispatch_on_tick(delta: float) -> void:
+	if stats == null:
+		return
+	for ability in stats.abilities:
+		if ability != null:
+			ability.on_tick(self, delta)
+
+func _dispatch_on_hit(damage: int, dash_direction: Vector2, is_back_hit: bool) -> void:
+	if stats == null:
+		return
+	for ability in stats.abilities:
+		if ability != null:
+			ability.on_hit(self, damage, dash_direction, is_back_hit)
+
+func _dispatch_on_death() -> void:
+	if stats == null:
+		return
+	for ability in stats.abilities:
+		if ability != null:
+			ability.on_death(self)
