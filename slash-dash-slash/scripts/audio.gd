@@ -18,6 +18,12 @@ var _player_thunk: AudioStreamPlayer
 var _player_splat: AudioStreamPlayer
 var _player_clang: AudioStreamPlayer
 
+# Set when `weapon_fired` arrives; consumed by the very next `dash_started`
+# so a slash plays only the slash sound, not slash + whoosh layered. Player
+# always emits weapon_fired BEFORE dash_started in `_start_dash`, so the
+# flag's lifetime is one frame at most.
+var _suppress_next_dash_sound: bool = false
+
 # ===== Lifecycle =====
 
 func _ready() -> void:
@@ -63,9 +69,15 @@ func bind_to_player(player: Node) -> void:
 # ===== Handlers =====
 
 func _on_dash_started(_dir: Vector2) -> void:
+	# Slash dashes already played slash_swing in _on_weapon_fired; don't
+	# layer the whoosh on top.
+	if _suppress_next_dash_sound:
+		_suppress_next_dash_sound = false
+		return
 	_play(_player_dash)
 
 func _on_weapon_fired(_dir: Vector2) -> void:
+	_suppress_next_dash_sound = true
 	_play(_player_slash)
 
 func _on_hit_landed(_target: Node, _final_damage: int, _position: Vector2, _dash_direction: Vector2, is_back_hit: bool) -> void:
