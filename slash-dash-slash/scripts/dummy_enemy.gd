@@ -37,7 +37,9 @@ func _ready() -> void:
 
 ## Player calls this on contact during a slash dash. Side is decided by the
 ## sign of the dot product between the dash direction and the enemy's facing.
-func take_dash_hit(damage: int, dash_direction: Vector2) -> void:
+## Returns the resolved hit info so the player can populate `hit_landed`
+## without recomputing the side itself.
+func take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary:
 	var is_back_hit: bool = facing.length() > 0.0 and dash_direction.dot(facing) > 0.0
 	var armor: float = armor_back if is_back_hit else armor_front
 	var final_damage: int = maxi(0, roundi(float(damage) * (1.0 - armor)))
@@ -45,6 +47,7 @@ func take_dash_hit(damage: int, dash_direction: Vector2) -> void:
 	_flash(FLASH_BACK if is_back_hit else FLASH_FRONT)
 	if health <= 0:
 		queue_free()
+	return {"final_damage": final_damage, "is_back_hit": is_back_hit}
 
 func _flash(color: Color) -> void:
 	if _flash_tween != null and _flash_tween.is_valid():

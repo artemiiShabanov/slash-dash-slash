@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="SfxPalette" load_steps=7 format=3 uid="uid://b1sfxpalbas3"]
+
+[ext_resource type="Script" path="res://scripts/resources/sfx_palette.gd" id="1_sfx"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/sfx_dash_whoosh.ogg" id="2_dash"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/sfx_slash_swing.ogg" id="3_slash"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/sfx_hit_thunk.ogg" id="4_thunk"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/sfx_hit_splat.ogg" id="5_splat"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/sfx_wall_clang.ogg" id="6_clang"]
+
+[resource]
+script = ExtResource("1_sfx")
+dash_whoosh = ExtResource("2_dash")
+slash_swing = ExtResource("3_slash")
+hit_thunk = ExtResource("4_thunk")
+hit_splat = ExtResource("5_splat")
+wall_clang = ExtResource("6_clang")
+master_volume_db = 0.0

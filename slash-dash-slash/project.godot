@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 InputSystem="*res://scripts/input_system.gd"
 CRTOverlay="*res://scripts/crt_overlay.gd"
+Audio="*res://scripts/audio.gd"
 
 [display]
 

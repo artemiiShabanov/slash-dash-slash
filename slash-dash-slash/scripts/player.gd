@@ -38,8 +38,10 @@ signal weapon_unloaded
 signal stamina_changed(current: int, max: int)
 
 ## A slash dash made contact with an enemy. Per-dash, per-enemy (no double-tap).
-## Future systems (gem procs, juice, sound) listen here.
-signal hit_landed(target: Node, damage: int, position: Vector2, dash_direction: Vector2)
+## `final_damage` is the post-armor value (what actually came off the enemy's
+## health). `is_back_hit` comes from the enemy's own side calc — single source
+## of truth, no duplication. Future systems (gem procs, audio, juice) listen here.
+signal hit_landed(target: Node, final_damage: int, position: Vector2, dash_direction: Vector2, is_back_hit: bool)
 
 # ===== Tunables =====
 
@@ -163,6 +165,10 @@ func _ready() -> void:
 	hit_area.area_entered.connect(_on_hit_area_area_entered)
 	weapon_fired.connect(_on_weapon_fired_for_hit)
 	dash_ended.connect(_on_dash_ended_for_hit)
+
+	# Audio: hand ourselves to the autoload so it can subscribe to all our
+	# combat signals without us knowing what it plays.
+	Audio.bind_to_player(self)
 
 func _physics_process(delta: float) -> void:
 	# Push player position so InputSystem can compute mouse-relative aim.
@@ -354,9 +360,18 @@ func _try_hit(target: Node) -> void:
 	if _hit_this_dash.has(target):
 		return
 	_hit_this_dash[target] = true
+
+	# Snapshot position before take_dash_hit — the enemy may queue_free itself
+	# during the call when health drops to 0.
+	var hit_position: Vector2 = target.global_position
+	var final_damage: int = hit_tuning.base_damage
+	var is_back_hit: bool = false
 	if target.has_method("take_dash_hit"):
-		target.take_dash_hit(hit_tuning.base_damage, _dash_direction)
-	hit_landed.emit(target, hit_tuning.base_damage, target.global_position, _dash_direction)
+		var result: Variant = target.take_dash_hit(hit_tuning.base_damage, _dash_direction)
+		if result is Dictionary:
+			final_damage = int(result.get("final_damage", hit_tuning.base_damage))
+			is_back_hit = bool(result.get("is_back_hit", false))
+	hit_landed.emit(target, final_damage, hit_position, _dash_direction, is_back_hit)
 
 # ===== Trail =====
 
