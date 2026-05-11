@@ -1,6 +1,6 @@
 # enemy-stats-resource
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -20,22 +20,22 @@ Define the universal property bag every enemy reads from. One Resource class, ma
 - `attack_speed: float` — attacks per second.
 - `move_speed: float` — pixels/second cap for AI movement.
 - `attack_range: float` — pixels; AI begins attacking when player is within.
+- `windup_duration: float` — seconds standing still in range before damage fires; 0 = instant; cancelled if the player leaves range mid-windup.
 - `rotation_speed: float` — radians/second; rate at which AI rotates `facing` toward the player.
 - `armor_front: float` — damage reduction in `[0, 1]` for front hits.
 - `armor_back: float` — damage reduction in `[0, 1]` for back hits.
 - `can_go_through_walls: bool` — disables wall collision when true.
+- `abilities: Array[EnemyAbility]` — composable behaviors; the enemy node's dispatcher iterates and calls hooks (`on_spawn`, `on_hit`, `on_tick`, `on_death`). See `enemy-ability-base` spec.
 
 Per-instance runtime state stays on the enemy node (not in stats):
 - `facing: Vector2` — orientation, mutated by AI.
 - `health: int` — current HP, initialized from `stats.max_health` at `_ready`.
 
-`abilities: Array[EnemyAbility]` is intentionally NOT in this spec; `enemy-ability-base` adds the field via /sync drift here.
-
 ## Edge cases & out-of-scope
 
 - `stats == null` on an enemy: push_warning, fall back to a hardcoded safe-default `EnemyStats.new()` so smoke tests don't crash.
 - Per-instance overrides: handled by editing the stats sub-resource inline in the scene OR by pointing the instance to a different `.tres`.
-- Out of scope: composable abilities array, per-element resistances, status effects, AI behaviors, enemy roster content, save/load of mutated stats mid-run.
+- Out of scope: per-element resistances, status effects, AI behaviors, enemy roster content, save/load of mutated stats mid-run.
 
 ## Tasks
 

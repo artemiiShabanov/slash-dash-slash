@@ -23,6 +23,11 @@ extends Resource
 ## Pixels; AI begins attacking when the player is within this range.
 @export var attack_range: float = 16.0
 
+## Seconds the enemy stands still in range before damage fires. 0 = no delay,
+## attack is instant on entering range. Cancelled if the player leaves range
+## during the windup (no progress preserved).
+@export var windup_duration: float = 0.0
+
 ## Radians per second; rate at which AI rotates the enemy's `facing`.
 @export var rotation_speed: float = 0.0
 

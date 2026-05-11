@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dh7g6fuaexaj1"]
 
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://di1jjoeakpifk" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/dummy_enemy.tscn" id="3_dummy"]
 
@@ -45,6 +45,15 @@ polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallRight"]
 polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
+
+[node name="WallMid" type="StaticBody2D" parent="Walls"]
+
+[node name="Visual" type="Polygon2D" parent="Walls/WallMid"]
+color = Color(0.45, 0.42, 0.38, 1)
+polygon = PackedVector2Array(-80, 40, 80, 40, 80, 50, -80, 50)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Walls/WallMid"]
+polygon = PackedVector2Array(-80, 40, 80, 40, 80, 50, -80, 50)
 
 [node name="Enemies" type="Node2D" parent="."]
 

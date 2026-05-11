@@ -9,10 +9,8 @@ extends Resource
 ## and `set_dash_duration_modifier`). Empty registries here in M2 — amulets, gems,
 ## and world-state will populate them later.
 
-## Pixel distance per dash before modifiers. Sized for the 640x360 internal frame.
-@export var base_dash_distance: float = 80.0
-
 ## Seconds from dash start to dash end before modifiers.
+## Dash distance now lives on `AmuletStats.dash_distance`; the amulet owns reach.
 @export var base_dash_duration: float = 0.12
 
 ## Speed-over-time profile. The integral over [0,1] is normalized internally so

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SwordStats" load_steps=2 format=3 uid="uid://b1executivekatan"]
+
+[ext_resource type="Script" path="res://scripts/resources/sword_stats.gd" id="1_sword"]
+
+[resource]
+script = ExtResource("1_sword")
+display_name = "Executive Katana"
+description = "Locked in the corner office, behind the photo of the CEO's bass-fishing trophy."
+base_damage = 2
+cooldown_duration = 0.35
+max_stamina = 1
+stamina_regen_interval = 0.7
+gem_slot_count = 1
+splash_size = 6.0
+loaded_tint_color = Color(0.65, 0.16, 0.13, 1.0)

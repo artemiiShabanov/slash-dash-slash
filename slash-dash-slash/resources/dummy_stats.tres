@@ -7,10 +7,11 @@
 script = ExtResource("1_estats")
 max_health = 3
 damage = 1
-attack_speed = 1.0
-move_speed = 60.0
-attack_range = 16.0
-rotation_speed = 0.0
+attack_speed = 0.8
+move_speed = 40.0
+attack_range = 22.0
+windup_duration = 0.5
+rotation_speed = 3.14159
 armor_front = 0.9
 armor_back = 0.0
 can_go_through_walls = false

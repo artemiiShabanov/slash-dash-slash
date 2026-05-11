@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SwordStats" load_steps=2 format=3 uid="uid://b1letteropener"]
+
+[ext_resource type="Script" path="res://scripts/resources/sword_stats.gd" id="1_sword"]
+
+[resource]
+script = ExtResource("1_sword")
+display_name = "Mailroom Letter Opener"
+description = "Found in the mailroom supply drawer. Sharper than it looks."
+base_damage = 1
+cooldown_duration = 0.2
+max_stamina = 1
+stamina_regen_interval = 0.45
+gem_slot_count = 2
+splash_size = 0.0
+loaded_tint_color = Color(0.34, 0.78, 0.42, 1.0)

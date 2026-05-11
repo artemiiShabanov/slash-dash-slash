@@ -8,7 +8,6 @@ point_count = 2
 
 [resource]
 script = ExtResource("1_dtune")
-base_dash_distance = 80.0
 base_dash_duration = 0.12
 speed_curve = SubResource("Curve_easeout")
 idle_rotation_lerp = 0.5

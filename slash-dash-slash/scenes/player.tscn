@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3 uid="uid://di1jjoeakpifk"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
-[ext_resource type="Resource" path="res://resources/dash_tuning.tres" id="2_tuning"]
-[ext_resource type="Resource" path="res://resources/weapon_tuning.tres" id="3_wtune"]
+[ext_resource type="Script" uid="uid://c1s7cnsv4scd5" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Resource" uid="uid://bgqmkn601ssci" path="res://resources/dash_tuning.tres" id="2_tuning"]
 [ext_resource type="PackedScene" path="res://scenes/ui/stamina_pips.tscn" id="4_pips"]
+[ext_resource type="Resource" uid="uid://pjxd7pd022yv" path="res://resources/equipment/swords/executive_katana.tres" id="4_tuyoq"]
 [ext_resource type="Resource" path="res://resources/hit_tuning.tres" id="5_htune"]
+[ext_resource type="Resource" uid="uid://b1defamuletsx" path="res://resources/equipment/default_amulet.tres" id="7_amulet"]
 
 [sub_resource type="CircleShape2D" id="cs_player"]
 radius = 6.0
@@ -13,15 +14,16 @@ radius = 6.0
 radius = 8.0
 
 [node name="Player" type="CharacterBody2D"]
+collision_layer = 8
 script = ExtResource("1_player")
 tuning = ExtResource("2_tuning")
-weapon_tuning = ExtResource("3_wtune")
 hit_tuning = ExtResource("5_htune")
+equipped_sword = ExtResource("4_tuyoq")
+equipped_amulet = ExtResource("7_amulet")
 
 [node name="Body" type="Polygon2D" parent="."]
-; Right-pointing arrow so rotation is readable: tip at (8, 0).
-polygon = PackedVector2Array(-6, -6, 8, 0, -6, 6)
 color = Color(0.96, 0.97, 0.92, 1)
+polygon = PackedVector2Array(-6, -6, 8, 0, -6, 6)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("cs_player")

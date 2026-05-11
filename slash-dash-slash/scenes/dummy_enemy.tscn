@@ -6,9 +6,9 @@
 [sub_resource type="CircleShape2D" id="cs_dummy"]
 radius = 8.0
 
-[node name="DummyEnemy" type="Area2D"]
-collision_layer = 2
-collision_mask = 0
+[node name="DummyEnemy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 5
 script = ExtResource("1_dummy")
 stats = ExtResource("2_stats")
 
@@ -24,4 +24,11 @@ polygon = PackedVector2Array(4, -3, 11, 0, 4, 3)
 color = Color(0.96, 0.97, 0.92, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("cs_dummy")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("cs_dummy")

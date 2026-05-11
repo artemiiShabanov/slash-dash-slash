@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cj1sf2vmgxtc"]
 
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://di1jjoeakpifk" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
 
 [node name="M2DashDemo" type="Node2D"]
@@ -46,6 +46,10 @@ polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
 polygon = PackedVector2Array(290, -160, 300, -160, 300, 160, 290, 160)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
+collision_layer = 1
+hit_tuning = null
+equipped_sword = null
+equipped_amulet = null
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
