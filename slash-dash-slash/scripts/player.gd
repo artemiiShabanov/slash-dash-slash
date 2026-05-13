@@ -443,12 +443,15 @@ func _try_hit(target: Node) -> void:
 	# Snapshot position before take_dash_hit — the enemy may queue_free itself
 	# during the call when health drops to 0.
 	var hit_position: Vector2 = enemy_root.global_position
-	var final_damage: int = hit_tuning.base_damage
+	# Per-slash damage comes from the equipped sword (gems will layer crits on
+	# top in a future spec).
+	var base_damage: int = equipped_sword.base_damage
+	var final_damage: int = base_damage
 	var is_back_hit: bool = false
 	if enemy_root.has_method("take_dash_hit"):
-		var result: Variant = enemy_root.take_dash_hit(hit_tuning.base_damage, _dash_direction)
+		var result: Variant = enemy_root.take_dash_hit(base_damage, _dash_direction)
 		if result is Dictionary:
-			final_damage = int(result.get("final_damage", hit_tuning.base_damage))
+			final_damage = int(result.get("final_damage", base_damage))
 			is_back_hit = bool(result.get("is_back_hit", false))
 	hit_landed.emit(enemy_root, final_damage, hit_position, _dash_direction, is_back_hit)
 
