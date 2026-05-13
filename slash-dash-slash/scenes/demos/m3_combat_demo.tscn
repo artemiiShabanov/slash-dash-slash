@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dh7g6fuaexaj1"]
+[gd_scene load_steps=5 format=3 uid="uid://dh7g6fuaexaj1"]
 
 [ext_resource type="PackedScene" uid="uid://di1jjoeakpifk" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
 [ext_resource type="PackedScene" path="res://scenes/dummy_enemy.tscn" id="3_dummy"]
+[ext_resource type="Resource" uid="uid://cgecqith5888d" path="res://resources/equipment/amulets/field_managers_belt.tres" id="3_hcsba"]
 
 [node name="M3CombatDemo" type="Node2D"]
 
@@ -73,6 +74,7 @@ position = Vector2(80, 80)
 facing = Vector2(0, -1)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
+equipped_amulet = ExtResource("3_hcsba")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 

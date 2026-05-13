@@ -54,7 +54,7 @@ signal died
 const TUNING_PATH := "res://resources/dash_tuning.tres"
 const HIT_TUNING_PATH := "res://resources/hit_tuning.tres"
 const DEFAULT_SWORD_PATH := "res://resources/equipment/swords/letter_opener.tres"
-const DEFAULT_AMULET_PATH := "res://resources/equipment/default_amulet.tres"
+const DEFAULT_AMULET_PATH := "res://resources/equipment/amulets/id_lanyard.tres"
 
 # Floors clamping pathological modifier stacks so dashes always commit.
 const MIN_DISTANCE: float = 1.0

@@ -1,10 +1,17 @@
 class_name AmuletStats
 extends Resource
 
-## Amulet equipment. Owns survival and dash-reach tunables.
+## Amulet equipment. Owns survival and dash-reach tunables, plus display
+## metadata for selection UI.
 ##
 ## One `.tres` per amulet archetype. The Player references one as
 ## `equipped_amulet` and reads its fields directly.
+
+## Human-readable name shown in equipment-selection UI cards.
+@export var display_name: String = ""
+
+## Short flavor / mechanical hint, shown on selection cards.
+@export var description: String = ""
 
 ## Player template HP. The Player initializes its runtime `health` from this.
 @export var max_health: int = 5

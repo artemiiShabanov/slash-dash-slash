@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/stamina_pips.tscn" id="4_pips"]
 [ext_resource type="Resource" uid="uid://pjxd7pd022yv" path="res://resources/equipment/swords/executive_katana.tres" id="4_tuyoq"]
 [ext_resource type="Resource" path="res://resources/hit_tuning.tres" id="5_htune"]
-[ext_resource type="Resource" uid="uid://b1defamuletsx" path="res://resources/equipment/default_amulet.tres" id="7_amulet"]
+[ext_resource type="Resource" uid="uid://b1idlanyard" path="res://resources/equipment/amulets/id_lanyard.tres" id="7_amulet"]
 
 [sub_resource type="CircleShape2D" id="cs_player"]
 radius = 6.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AmuletStats" load_steps=2 format=3 uid="uid://b1fieldmanbelt"]
+
+[ext_resource type="Script" path="res://scripts/resources/amulet_stats.gd" id="1_amulet"]
+
+[resource]
+script = ExtResource("1_amulet")
+display_name = "Field Manager's Belt"
+description = "Heavy buckle, heavier responsibilities."
+max_health = 8
+health_regen_rate = 0.0
+shield_count = 0
+shield_regen_interval = 0.0
+dash_distance = 55.0
