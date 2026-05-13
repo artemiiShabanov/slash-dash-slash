@@ -1,6 +1,6 @@
 # armor-direction
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -16,13 +16,14 @@ Make approach angle matter. An enemy hit from behind takes more damage than one 
 
 ## Data
 
-- Enemy fields (`@export` on `DummyEnemy`; real enemies use the future `EnemyStats` resource):
-  - `facing: Vector2` — unit vector, default `Vector2.RIGHT`.
-  - `armor_front: float` — damage reduction in `[0, 1]`. Default 0.9 so a 1-damage hit from front rounds to 0 (blocked) — placeholder until M5 raises base damage.
-  - `armor_back: float` — damage reduction in `[0, 1]`. Default 0.0 (full damage).
-- Side calc inside `take_dash_hit`:
+- Enemy fields:
+  - `facing: Vector2` — unit vector, default `Vector2.RIGHT`. Per-instance `@export` on the enemy node (runtime state mutated by AI).
+  - `armor_front: float` — damage reduction in `[0, 1]`, sourced from `EnemyStats.armor_front` (since `enemy-stats-resource`).
+  - `armor_back: float` — damage reduction in `[0, 1]`, sourced from `EnemyStats.armor_back`.
+- `take_dash_hit(damage, dash_direction) -> Dictionary`:
   - `dot = dash_direction.dot(facing)`; `dot > 0` → back hit, else → front hit.
   - `final_damage = maxi(0, roundi(damage * (1.0 - armor)))`.
+  - Returns `{"final_damage": final_damage, "is_back_hit": is_back_hit}` so the player's `hit_landed` signal can be populated without recomputing the side. (Drift introduced when `audio_sfx_palette` shipped.)
 - Flash color constants on `DummyEnemy`:
   - `FLASH_FRONT: Color = Color(1.3, 1.3, 1.3, 1)` — mild brighten.
   - `FLASH_BACK: Color = Color(3.0, 3.0, 3.0, 1)` — strong overbright.
@@ -31,7 +32,7 @@ Make approach angle matter. An enemy hit from behind takes more damage than one 
 
 - `facing == Vector2.ZERO`: treat as front hit (default to the safer-for-enemy side).
 - Damage rounds to zero: enemy still flashes (player gets feedback that contact landed) but health is unchanged.
-- Out of scope: side armor (third bucket), armor-piercing modifiers, per-element resistance, real `EnemyStats` resource, AI-driven facing rotation, hit-stop / screen shake / sound, damage numbers.
+- Out of scope: side armor (third bucket), armor-piercing modifiers, per-element resistance, hit-stop / screen shake / sound, damage numbers. AI-driven facing rotation now in (per `basic-enemy-ai`); `EnemyStats` resource now exists.
 
 ## Tasks
 

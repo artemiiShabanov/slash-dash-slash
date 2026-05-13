@@ -1,6 +1,6 @@
 # audio-sfx-palette
 
-**Status:** Synced 2026-05-07
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -8,8 +8,8 @@ Wire the meaty combat events to sounds — every dash, slash, hit, and wall stop
 
 ## Player-facing behavior
 
-- A short whoosh on every dash (slash or reposition).
-- A slash swing layered on top of the whoosh when the dash is actually a slash.
+- A short whoosh on every reposition dash. On a slash dash the whoosh is suppressed in favor of the slash sound — the dash whoosh and slash swing never play layered together; one or the other carries the dash.
+- A slash swing fires on the slash dash (replacing the whoosh).
 - A muffled "thunk" when a slash hits an enemy on the front (armored) side.
 - A meaty "splat" when a slash hits on the back side.
 - A sharp anticlimactic clang when a dash terminates against a wall.
@@ -27,6 +27,7 @@ Wire the meaty combat events to sounds — every dash, slash, hit, and wall stop
   - `wall_clang: AudioStream`
   - `master_volume_db: float` — applied to every player (default 0).
 - One `AudioStreamPlayer` child per slot under the `Audio` autoload; retriggering cuts off the previous play (acceptable for M3; polyphony is a future tweak).
+- Slash-vs-whoosh exclusivity is implemented with a one-frame flag: `_on_weapon_fired` sets `_suppress_next_dash_sound = true`; the immediately-following `_on_dash_started` consumes the flag and skips the whoosh. Player always emits `weapon_fired` before `dash_started` in `_start_dash`, so the flag's lifetime is one frame.
 - Side disambiguation comes from the `hit_landed` signal payload (`is_back_hit: bool`) — no duck-typing, no logic duplication. To enable this, two adjacent specs gain small interface changes (drift on `hit_detection` + `armor_direction`, captured at next /sync of each):
   - `take_dash_hit(damage, dash_direction) -> Dictionary` (was `void`); returns `{"final_damage": int, "is_back_hit": bool}`.
   - `hit_landed(target, final_damage, position, dash_direction, is_back_hit)` — `damage` slot now carries the post-armor amount; new trailing `is_back_hit` arg.

@@ -1,6 +1,6 @@
 # core-dash
 
-**Status:** Synced 2026-05-07
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -37,8 +37,9 @@ Implemented as an explicit enum or just a boolean `is_dashing` plus elapsed-time
 
 These are **base** values. Effective per-dash values are computed from base + registered modifiers (see below).
 
-- `base_dash_distance: float` — total pixel distance per dash before modifiers (default ~80 px in 640×360 internal units; sized to feel good against the M2 demo arena)
 - `base_dash_duration: float` — seconds from start to end before modifiers (default ~0.12 s)
+
+Dash distance lives on the equipped amulet (`AmuletStats.dash_distance`, per `equipment-resource-schema`), not on DashTuning. The player uses `equipped_amulet.dash_distance` as the base in the modifier formula.
 - `speed_curve: Curve` — author the speed-over-time profile. Default ease-out (1.0 at t=0 → 0.0 at t=1, decreasing). The curve's *integral* over [0,1] must produce a movement of the *effective* dash distance; the implementation normalizes by integrating the curve so authored shape and total distance stay independent.
 - `idle_rotation_lerp: float` — smoothing factor (0..1) applied per-frame to the sprite's facing rotation while idle. `1.0` = snaps instantly to aim; lower = smoother but laggy. Default ~0.5.
 - `trail_max_points: int` — max points in the fading trail

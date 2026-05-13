@@ -140,17 +140,24 @@ func _ready() -> void:
 	add_to_group("player")
 	_is_dead = false
 
-	# Equipment load (sword + amulet are the source of truth for combat tunables).
+	# Equipment load. Priority: RunState (selection scene) > scene-level export
+	# > default path > class default. Selection always wins so the run-start
+	# pick is honored even when player.tscn carries a debug export.
+	if RunState.chosen_sword != null:
+		equipped_sword = RunState.chosen_sword
 	if equipped_sword == null:
 		equipped_sword = load(DEFAULT_SWORD_PATH) as SwordStats
-		if equipped_sword == null:
-			push_error("Player: failed to load default SwordStats at %s; using class defaults." % DEFAULT_SWORD_PATH)
-			equipped_sword = SwordStats.new()
+	if equipped_sword == null:
+		push_error("Player: failed to load default SwordStats at %s; using class defaults." % DEFAULT_SWORD_PATH)
+		equipped_sword = SwordStats.new()
+
+	if RunState.chosen_amulet != null:
+		equipped_amulet = RunState.chosen_amulet
 	if equipped_amulet == null:
 		equipped_amulet = load(DEFAULT_AMULET_PATH) as AmuletStats
-		if equipped_amulet == null:
-			push_error("Player: failed to load default AmuletStats at %s; using class defaults." % DEFAULT_AMULET_PATH)
-			equipped_amulet = AmuletStats.new()
+	if equipped_amulet == null:
+		push_error("Player: failed to load default AmuletStats at %s; using class defaults." % DEFAULT_AMULET_PATH)
+		equipped_amulet = AmuletStats.new()
 	health = equipped_amulet.max_health
 
 	if tuning == null:

@@ -1,0 +1,66 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/equipment_selection.gd" id="1_sel"]
+
+[node name="EquipmentSelection" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_sel")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.07, 0.06, 0.05, 1)
+
+[node name="Margins" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="Layout" type="VBoxContainer" parent="Margins"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margins/Layout"]
+layout_mode = 2
+text = "SELECT EQUIPMENT"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="Margins/Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+
+[node name="Columns" type="HBoxContainer" parent="Margins/Layout"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 32
+
+[node name="SwordColumn" type="VBoxContainer" parent="Margins/Layout/Columns"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SwordHeader" type="Label" parent="Margins/Layout/Columns/SwordColumn"]
+layout_mode = 2
+text = "SWORD"
+horizontal_alignment = 1
+
+[node name="AmuletColumn" type="VBoxContainer" parent="Margins/Layout/Columns"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AmuletHeader" type="Label" parent="Margins/Layout/Columns/AmuletColumn"]
+layout_mode = 2
+text = "AMULET"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="Margins/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 8)
+
+[node name="StartButton" type="Button" parent="Margins/Layout"]
+layout_mode = 2
+text = "Start Run"

@@ -1,6 +1,6 @@
 # amulet-roster
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 

@@ -1,6 +1,6 @@
 # hit-detection
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -16,13 +16,14 @@ Make a slashing dash deal damage to every enemy along its path. One slash = one 
 
 ## Data
 
-- Signal: `hit_landed(target: Node, damage: int, position: Vector2, dash_direction: Vector2)` — emitted on the player after each per-enemy contact during a slash dash.
+- Signal: `hit_landed(target: Node, final_damage: int, position: Vector2, dash_direction: Vector2, is_back_hit: bool)` — emitted on the player after each per-enemy contact during a slash dash. `final_damage` is the post-armor amount; `is_back_hit` is provided by the enemy's `take_dash_hit` return so consumers don't recompute the side.
 - State on player: `_hit_this_dash: Dictionary` — set of enemies already hit in the current dash; reset on `weapon_fired`.
 - Hit area: `HitArea` (Area2D child of the player) with a `CircleShape2D` of radius `body_radius + hit_radius_offset`. `monitoring` is toggled on at `weapon_fired`, off at `dash_ended`. On enable, queries `get_overlapping_areas` (deferred one frame) to catch enemies already inside.
 - Tunables — `res://resources/hit_tuning.tres` (`class_name HitTuning`):
   - `base_damage: int` — placeholder per-slash damage until sword stats arrive in M5.
   - `hit_radius_offset: float` — added to body radius for forgiveness margin (default 2.0).
-- Enemy interface (duck-typed): `take_dash_hit(damage: int, dash_direction: Vector2) -> void`. Any node with this method participates. Armor logic lives inside the enemy (the `armor-direction` spec extends this).
+- Enemy interface (duck-typed): `take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary`. Returns `{"final_damage": int, "is_back_hit": bool}` so the player can populate `hit_landed` without recomputing side or armor math. Any node with this method participates. Armor logic lives inside the enemy (the `armor-direction` spec extends this).
+- The player walks up from the contact area via `area.get_parent()` to find the enemy root (because enemies are `CharacterBody2D` with a child `Hurtbox: Area2D` since `basic-enemy-ai`). The group check (`"enemy"`) runs on the parent.
 - Dummy enemy: `scenes/dummy_enemy.tscn` + `scripts/dummy_enemy.gd` — placeholder for M3 smoke test only; replaced by real enemies in M4.
   - Health (default 3), `take_dash_hit` subtracts damage, flashes modulate white briefly, `queue_free` at ≤ 0.
   - Has its own Area2D + CollisionShape2D for the player's HitArea to detect. Mark with group `"enemy"`.

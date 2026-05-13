@@ -1,6 +1,6 @@
 # ui-style-foundation
 
-**Status:** Synced 2026-05-06
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -12,7 +12,7 @@ Establish the visual ground every UI surface stands on — render resolution, pa
 - A unified **CRT post-process** applies across the whole image — both world and UI — via a global shader on a topmost CanvasLayer. Effects layered in order: barrel curvature (with black bezel outside the curved region), chromatic aberration, slightly bluish phosphor tint, scanlines aligned to the internal 360-row height, signal noise, and vignette. Every scene shares one mood; nothing breaks the wash.
 - The default Theme uses an **inverted CRT scheme**: dark backgrounds with bright text, `dot_matrix_green` accents on hover and borders, solid green "selected" highlights on pressed buttons. Mimics a 1970s monochrome terminal.
 - All in-game UI text (HUD, menus, button labels, dialogue) uses **VT323** — a CRT/terminal font. Drives every Control by default.
-- All in-world **paper documents** (memos, forms, signage, the resignation form, achievement messages styled as memos) use **Special Elite** — a typewriter font. Diegetic break: paper looks like paper *on* the monitor. The Document type variation keeps its paper-yellow background and ink-black text inside the otherwise-dark UI. The two-font / two-scheme split mirrors the lore: digital corporate vs paper bureaucracy.
+- All in-world **paper documents** (memos, forms, signage, the resignation form, achievement messages styled as memos) use **Special Elite** — a typewriter font. Diegetic break: paper looks like paper *on* the monitor. Paper-styled Controls (`paper_yellow` background, `ink_black` text) are produced via the `PaperStyle` helper that applies per-node theme overrides — Godot's theme editor strips manually-authored type-variation entries on round-trip, so overrides are the durable path. The two-font / two-scheme split mirrors the lore: digital corporate vs paper bureaucracy.
 - Common Godot Control types (Label, Button, Panel, RichTextLabel, LineEdit, containers, separators, scroll bars, progress bars, checkboxes, option buttons) inherit a coherent default style from the project Theme without per-scene styling.
 - The mood is on by default in every new scene; opting out is possible but discouraged.
 
@@ -50,9 +50,11 @@ Roster expands as floors and systems demand new named slots.
 
 Two fonts, both wired into the Theme:
 - `font_ui` — `assets/fonts/font_ui.ttf` — **VT323** (OFL). Default font for the project Theme; drives every UI Control unless overridden.
-- `font_document` — `assets/fonts/font_document.ttf` — **Special Elite** (Apache 2.0). Used by the `Document` type variation on RichTextLabel (and any future Document-variation Control) for paper-styled surfaces.
+- `font_document` — `assets/fonts/font_document.ttf` — **Special Elite** (Apache 2.0). Loaded by the `PaperStyle` helper for paper-styled surfaces.
 
-Both fonts are free for commercial use. Replacement: drop a different `.ttf` at the same path; no theme edits needed unless the Document variation's font reference changes. See `assets/fonts/README.md` for sourcing notes.
+Both fonts are free for commercial use. Replacement: drop a different `.ttf` at the same path; no theme edits needed (the `PaperStyle` helper paths point to fixed locations). See `assets/fonts/README.md` for sourcing notes.
+
+`scripts/ui/paper_style.gd` (`class_name PaperStyle`) — static helper applying paper-yellow background + ink-black text + typewriter font overrides directly on a Control. Public API: `apply_to_button`, `apply_to_rich_text`, `apply_to_label`, `make_paper_card`. Replaces the original "Document type variation" approach.
 
 ### Default Theme
 
@@ -60,7 +62,7 @@ Both fonts are free for commercial use. Replacement: drop a different `.ttf` at 
 - **Label** — `font_ui` (VT323), `font_color = fluorescent_white`
 - **Button** — all four states using palette StyleBoxFlats: `boardroom_black` bg / `fluorescent_white` border (normal); slightly lighter dark / `dot_matrix_green` border (hover); solid `dot_matrix_green` bg / `ink_black` text (pressed = selected); `ink_black` bg / grey border / grey text (disabled)
 - **Panel** + **PanelContainer** — `boardroom_black` background with a 1px `dot_matrix_green` border
-- **RichTextLabel** — `font_ui` default with `fluorescent_white` text; `Document` variation uses `font_document` (Special Elite) and switches background to `paper_yellow` with `ink_black` text
+- **RichTextLabel** — `font_ui` default with `fluorescent_white` text. Paper-styled instances apply `PaperStyle.apply_to_rich_text(label)` to swap to `font_document` (Special Elite) + `ink_black` text. Containing wrapper applies the paper background.
 - **LineEdit** — `ink_black` bg, `dot_matrix_green` border + text + caret (terminal feel)
 - **HBoxContainer / VBoxContainer** — `separation = 4`
 - **HSeparator / VSeparator** — `shadow_grey` 1px line
@@ -113,7 +115,7 @@ The autoload lives at `scripts/crt_overlay.gd` (registered as `CRTOverlay` in `p
 - [x] Create `Palette` Resource class (`scripts/resources/palette.gd`) with the named color fields above
 - [x] Create `resources/palette.tres` with initial mood-correct defaults (tunable; values not load-bearing)
 - [x] Install two fonts: `font_ui.ttf` = VT323 (OFL); `font_document.ttf` = Special Elite (Apache 2.0). Both under `assets/fonts/`
-- [x] Create `resources/default_theme.tres` with the inverted-CRT scheme; styles all listed Control types using palette colors; Document type_variation on RichTextLabel switches font + paper background
+- [x] Create `resources/default_theme.tres` with the inverted-CRT scheme; styles all listed Control types using palette colors. Paper-styled surfaces handled via `scripts/ui/paper_style.gd` (per-node overrides) — manually-authored Document type variations don't survive Godot's theme round-trip.
 - [x] Register `default_theme.tres` as `gui/theme/custom` in `project.godot`
 - [x] Create `CRTTuning` Resource class (`scripts/resources/crt_tuning.gd`) and `resources/crt_tuning.tres` with mood defaults
 - [x] Author `assets/shaders/crt_post_process.gdshader`: barrel curvature + chromatic aberration + phosphor tint + scanlines + signal noise + vignette, all parameterized

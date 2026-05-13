@@ -1,6 +1,6 @@
 # equipment-resource-schema
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -14,6 +14,8 @@ Define the two equipment Resource classes (`SwordStats`, `AmuletStats`) and migr
 ## Data
 
 `SwordStats` (`scripts/resources/sword_stats.gd`, `class_name SwordStats`):
+- `display_name: String` — shown on selection cards.
+- `description: String` — short flavor / mechanical hint on selection cards.
 - `base_damage: int` — passed to `take_dash_hit` as the per-slash damage.
 - `cooldown_duration: float` — seconds per fire.
 - `max_stamina: int` — consecutive-slash cap.
@@ -24,6 +26,8 @@ Define the two equipment Resource classes (`SwordStats`, `AmuletStats`) and migr
 - `special_ability: Resource` — slot for the future `SwordSpecial` hook resource; null for now.
 
 `AmuletStats` (`scripts/resources/amulet_stats.gd`, `class_name AmuletStats`):
+- `display_name: String` — shown on selection cards.
+- `description: String` — short flavor / mechanical hint on selection cards.
 - `max_health: int` — player template HP; runtime tracks current separately.
 - `health_regen_rate: float` — HP per second; not consumed yet.
 - `shield_count: int` — discrete hit-absorbers; not consumed yet.
@@ -32,16 +36,18 @@ Define the two equipment Resource classes (`SwordStats`, `AmuletStats`) and migr
 - `amulet_effect: Resource` — slot for the future `AmuletEffect` hook resource; null for now.
 
 Player integration (`scripts/player.gd`):
-- `@export var equipped_sword: SwordStats` — loaded from `res://resources/equipment/default_sword.tres` if null.
-- `@export var equipped_amulet: AmuletStats` — loaded from `res://resources/equipment/default_amulet.tres` if null.
-- Replace all `weapon_tuning.*` reads with `equipped_sword.*`.
-- Replace `max_health` `@export` + reads with `equipped_amulet.max_health`.
-- Replace `dash_tuning.base_dash_distance` reads with `equipped_amulet.dash_distance` (used as the base in `_compute_effective` for distance).
+- `@export var equipped_sword: SwordStats` — defaults to `Player.DEFAULT_SWORD_PATH` (`res://resources/equipment/swords/letter_opener.tres`) when null.
+- `@export var equipped_amulet: AmuletStats` — defaults to `Player.DEFAULT_AMULET_PATH` (`res://resources/equipment/amulets/id_lanyard.tres`) when null.
+- Equipment ladder in `_ready` (highest priority first): `RunState.chosen_sword` / `chosen_amulet` → scene-level export → default path → class default. Selection scene always wins so run-start picks take effect; exports remain useful for direct-scene debugging.
+- All `weapon_tuning.*` reads replaced with `equipped_sword.*`.
+- Former `@export var max_health` removed; `health` initializes from `equipped_amulet.max_health`.
+- `dash_tuning.base_dash_distance` reads replaced with `equipped_amulet.dash_distance` in `_compute_effective` for distance.
 - `_apply_loaded_modulate` reads `equipped_sword.loaded_tint_color`.
 
 Resources:
-- `resources/equipment/default_sword.tres` — defaults matching current `weapon_tuning.tres` (cooldown 0.2, max_stamina 1, regen 0.45, loaded tint dot_matrix_green) + base_damage 1, gem_slot_count 2, splash_size 0.
-- `resources/equipment/default_amulet.tres` — defaults matching current player (max_health 5, dash_distance 80) + zeroed regen/shields/effect.
+- `resources/equipment/swords/letter_opener.tres` — the default sword (see `sword-roster`); mirrors prior `weapon_tuning.tres` numbers.
+- `resources/equipment/amulets/id_lanyard.tres` — the default amulet (see `amulet-roster`); HP 5, dash_distance 80.
+- The original `default_sword.tres` / `default_amulet.tres` placeholders are gone; their content lives in the roster files above.
 
 Deprecated, removed by this spec:
 - `WeaponTuning` class + `resources/weapon_tuning.tres` — fully replaced by `SwordStats`.

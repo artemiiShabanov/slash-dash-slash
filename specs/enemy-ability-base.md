@@ -1,6 +1,6 @@
 # enemy-ability-base
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -20,8 +20,7 @@ Composable behavior for enemies. Each `EnemyStats` carries a list of abilities (
 - `on_tick(enemy: Node, delta: float) -> void`
 - `on_death(enemy: Node) -> void`
 
-Drift on `enemy-stats-resource` (capture next /sync of that):
-- `EnemyStats` gains `abilities: Array[EnemyAbility]` — default empty.
+`EnemyStats.abilities: Array[EnemyAbility]` (default empty) holds the list — see `enemy-stats-resource` (synced).
 
 Dispatcher (on the enemy node, currently `DummyEnemy`):
 - `_ready` → loop `stats.abilities` and call `on_spawn(self)`.

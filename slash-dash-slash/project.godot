@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="slash-dash-slash"
-run/main_scene="res://scenes/demos/m3_combat_demo.tscn"
+run/main_scene="res://scenes/equipment_selection.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
@@ -20,13 +20,13 @@ config/icon="res://icon.svg"
 InputSystem="*res://scripts/input_system.gd"
 CRTOverlay="*res://scripts/crt_overlay.gd"
 Audio="*res://scripts/audio.gd"
+RunState="*res://scripts/run_state.gd"
 
 [display]
 
 window/size/viewport_width=640
 window/size/viewport_height=360
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/stretch/scale_mode="integer"
 
 [gui]

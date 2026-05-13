@@ -1,6 +1,6 @@
 # weapon-cooldown-stamina
 
-**Status:** Shipped
+**Status:** Synced 2026-05-09
 
 ## Goal
 
@@ -18,21 +18,21 @@ Gate the sword behind a short cooldown and a small stamina counter so each dash 
 
 ## Data
 
-Lives on the player for now; will likely move onto the equipped sword once `equipment-resource-schema` lands.
+Tunables now live on the equipped sword (per `equipment-resource-schema`); the player reads them via `equipped_sword.*`.
 
 - Signal: `weapon_fired(direction: Vector2)` — emitted from `_start_dash` when sword is loaded; hit-detection listens.
 - Signal: `weapon_loaded()` — emitted when sword transitions reloading → loaded.
 - Signal: `weapon_unloaded()` — emitted when sword transitions loaded → reloading.
 - Signal: `stamina_changed(current: int, max: int)` — emitted on any change; the stamina-circles UI listens.
 - State: `is_weapon_loaded: bool` — current ready flag.
-- State: `stamina: int` — `0..max_stamina`.
+- State: `stamina: int` — `0..equipped_sword.max_stamina`.
 - State: `_cooldown_remaining: float` — seconds left in current cooldown.
 - State: `_regen_accumulator: float` — fractional seconds toward next stamina tick.
-- Tunables — `res://resources/weapon_tuning.tres` (`class_name WeaponTuning`):
-  - `cooldown_duration: float` — seconds per fire (default short, ~0.30 s).
-  - `max_stamina: int` — consecutive-slash cap (default 3).
-  - `stamina_regen_interval: float` — seconds per stamina point (default ~0.45 s).
-  - `loaded_tint_color: Color` — placeholder sprite modulate while loaded (default palette `dot_matrix_green`).
+- Tunables (sourced from `SwordStats`; see `equipment-resource-schema`):
+  - `cooldown_duration: float` — seconds per fire.
+  - `max_stamina: int` — consecutive-slash cap.
+  - `stamina_regen_interval: float` — seconds per stamina point.
+  - `loaded_tint_color: Color` — placeholder sprite modulate while loaded.
 - Stamina UI scene: `scenes/ui/stamina_pips.tscn` — a `Node2D` of `max_stamina` small circles drawn via `_draw`, positioned just above the player by an offset; subscribes to `stamina_changed`.
 
 ## Edge cases & out-of-scope
@@ -40,7 +40,7 @@ Lives on the player for now; will likely move onto the equipped sword once `equi
 - Dash with stamina = 0 but cooldown elapsed: still a non-hit dash; no fire.
 - Tuning change at runtime (e.g., live editor tweak of `max_stamina`): clamp current stamina to new max, re-emit `stamina_changed`.
 - Modifier system (gems / amulets buffing cooldown or stamina): not in scope here. Same pattern as `core_dash` modifier registries can be added later.
-- Sword identity / equipped-sword-resource: out of scope; tuning lives on the player for now.
+- Sword identity / equipped-sword-resource: handled by `equipment-resource-schema` (since shipped).
 - Real "loaded" sprite animation: deferred until the player gets a real sprite sheet; placeholder tint stands in.
 - Audio playback: `audio-sfx-palette` listens to the signals and plays. Not done here.
 - Hit detection, hit feedback, gem procs, armor: separate specs.
