@@ -68,6 +68,13 @@ const MIN_DURATION: float = 0.01
 @export var equipped_sword: SwordStats
 @export var equipped_amulet: AmuletStats
 
+## Weapon gems for this run. RunState takes precedence when non-empty;
+## these exports are debug fallbacks for direct-scene testing.
+@export var equipped_weapon_gems: Array[WeaponGem] = []
+
+## Amulet gem for this run. RunState takes precedence when set.
+@export var equipped_amulet_gem: AmuletGem
+
 # ===== Public state =====
 
 ## Most recent aim direction received from the input system.
@@ -159,6 +166,17 @@ func _ready() -> void:
 		push_error("Player: failed to load default AmuletStats at %s; using class defaults." % DEFAULT_AMULET_PATH)
 		equipped_amulet = AmuletStats.new()
 	health = equipped_amulet.max_health
+
+	# Gems: RunState wins if it has any; else the scene-level exports stand
+	# (useful for direct-scene debugging via player.tscn).
+	if RunState.equipped_weapon_gems.size() > 0:
+		equipped_weapon_gems = RunState.equipped_weapon_gems
+	if RunState.equipped_amulet_gem != null:
+		equipped_amulet_gem = RunState.equipped_amulet_gem
+
+	# Dispatch on_slash to weapon gems on every contact. Proc/kill/combo
+	# dispatchers land in their own specs (weapon-gem-crit-proc etc.).
+	hit_landed.connect(_dispatch_gems_on_slash)
 
 	if tuning == null:
 		tuning = load(TUNING_PATH) as DashTuning
@@ -454,6 +472,13 @@ func _try_hit(target: Node) -> void:
 			final_damage = int(result.get("final_damage", base_damage))
 			is_back_hit = bool(result.get("is_back_hit", false))
 	hit_landed.emit(enemy_root, final_damage, hit_position, _dash_direction, is_back_hit)
+
+# ===== Gem dispatchers =====
+
+func _dispatch_gems_on_slash(target: Node, _final_damage: int, _position: Vector2, dash_direction: Vector2, _is_back_hit: bool) -> void:
+	for gem in equipped_weapon_gems:
+		if gem != null:
+			gem.on_slash(self, target, dash_direction)
 
 # ===== Trail =====
 
