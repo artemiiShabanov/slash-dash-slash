@@ -11,14 +11,18 @@ func on_slash(_player: Node, target: Node, dash_direction: Vector2) -> void:
 	var target_name: String = target.name if target != null else "null"
 	print("[LogWeaponGem:%s] on_slash target=%s dir=%s" % [Element.display_name(element), target_name, dash_direction])
 
-func on_proc(_player: Node, target: Node, dash_direction: Vector2) -> void:
-	var target_name: String = target.name if target != null else "null"
-	print("[LogWeaponGem:%s] on_proc target=%s dir=%s" % [Element.display_name(element), target_name, dash_direction])
+func on_proc(_player: Node, ctx: SlashContext) -> void:
+	# Call super to keep the default damage-multiplier behavior, then log.
+	super.on_proc(_player, ctx)
+	print("[LogWeaponGem:%s] on_proc mult=%.2f tags=%s" % [Element.display_name(element), ctx.damage_multiplier, ctx.tags])
 
 func on_kill(_player: Node, target: Node) -> void:
 	var target_name: String = target.name if target != null else "null"
 	print("[LogWeaponGem:%s] on_kill target=%s" % [Element.display_name(element), target_name])
 
-func on_combo(_player: Node, partner_gems: Array, target: Node) -> void:
-	var target_name: String = target.name if target != null else "null"
-	print("[LogWeaponGem:%s] on_combo partners=%d target=%s" % [Element.display_name(element), partner_gems.size(), target_name])
+func on_combo(_player: Node, partner_gems: Array, _ctx: SlashContext) -> void:
+	var partner_elements: Array = []
+	for g in partner_gems:
+		if g != null:
+			partner_elements.append(Element.display_name(g.element))
+	print("[LogWeaponGem:%s] on_combo partners=%s" % [Element.display_name(element), partner_elements])

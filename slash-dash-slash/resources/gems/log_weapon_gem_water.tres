@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="LogWeaponGem" load_steps=2 format=3 uid="uid://b1loggemwater"]
+
+[ext_resource type="Script" path="res://scripts/gems/log_weapon_gem.gd" id="1_loggem"]
+
+[resource]
+script = ExtResource("1_loggem")
+element = 1

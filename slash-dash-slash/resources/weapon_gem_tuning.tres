@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="WeaponGemTuning" load_steps=2 format=3 uid="uid://b1wgtune001"]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_gem_tuning.gd" id="1_wgtune"]
+
+[resource]
+script = ExtResource("1_wgtune")
+proc_flash_duration = 0.12

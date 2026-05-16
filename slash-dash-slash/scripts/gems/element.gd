@@ -51,3 +51,16 @@ static func base_damage_multiplier(kind: int) -> float:
 		Kind.METAL: return 3.0
 		Kind.LIGHTNING: return 2.5
 	return 1.0
+
+## Per-element tint used for the proc flash on struck enemies. Placeholder
+## palette; tunable. Real visual treatment will graduate to a palette resource
+## once `audio_sfx_palette` and a visuals spec mature.
+static func color(kind: int) -> Color:
+	match kind:
+		Kind.FIRE: return Color(1.0, 0.45, 0.15)
+		Kind.WATER: return Color(0.30, 0.55, 1.0)
+		Kind.ICE: return Color(0.65, 0.90, 1.0)
+		Kind.WIND: return Color(0.70, 1.0, 0.60)
+		Kind.METAL: return Color(0.85, 0.85, 0.90)
+		Kind.LIGHTNING: return Color(1.0, 0.95, 0.30)
+	return Color(1, 1, 1)

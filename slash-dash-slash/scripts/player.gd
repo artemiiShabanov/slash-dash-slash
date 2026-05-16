@@ -53,6 +53,7 @@ signal died
 
 const TUNING_PATH := "res://resources/dash_tuning.tres"
 const HIT_TUNING_PATH := "res://resources/hit_tuning.tres"
+const GEM_TUNING_PATH := "res://resources/weapon_gem_tuning.tres"
 const DEFAULT_SWORD_PATH := "res://resources/equipment/swords/letter_opener.tres"
 const DEFAULT_AMULET_PATH := "res://resources/equipment/amulets/id_lanyard.tres"
 
@@ -62,6 +63,7 @@ const MIN_DURATION: float = 0.01
 
 @export var tuning: DashTuning
 @export var hit_tuning: HitTuning
+@export var gem_tuning: WeaponGemTuning
 
 ## Equipment chosen at run start (per GDD: sword + amulet only).
 ## Future `equipment-selection-ui` will let the player pick at run start.
@@ -108,6 +110,12 @@ var _regen_accumulator: float = 0.0
 
 # Set of targets already hit during the current dash; reset on weapon_fired.
 var _hit_this_dash: Dictionary = {}
+
+# ===== Internal gem state =====
+
+# Per-slash gem proc context. Built at weapon_fired, cleared at dash_ended.
+# Null when no slash is in flight (or before the first slash).
+var _current_slash_ctx: SlashContext = null
 
 # ===== Internal dash state =====
 
@@ -177,6 +185,17 @@ func _ready() -> void:
 	# Dispatch on_slash to weapon gems on every contact. Proc/kill/combo
 	# dispatchers land in their own specs (weapon-gem-crit-proc etc.).
 	hit_landed.connect(_dispatch_gems_on_slash)
+
+	# Gem proc roll runs at weapon_fired BEFORE hit-detection enables; both
+	# handlers are synchronous and contacts are deferred to the next physics
+	# frame, so the ctx is always populated before the first contact lands.
+	if gem_tuning == null:
+		gem_tuning = load(GEM_TUNING_PATH) as WeaponGemTuning
+		if gem_tuning == null:
+			push_error("Player: failed to load WeaponGemTuning at %s; using defaults." % GEM_TUNING_PATH)
+			gem_tuning = WeaponGemTuning.new()
+	weapon_fired.connect(_on_weapon_fired_for_gems)
+	dash_ended.connect(_on_dash_ended_for_gems)
 
 	if tuning == null:
 		tuning = load(TUNING_PATH) as DashTuning
@@ -461,17 +480,21 @@ func _try_hit(target: Node) -> void:
 	# Snapshot position before take_dash_hit — the enemy may queue_free itself
 	# during the call when health drops to 0.
 	var hit_position: Vector2 = enemy_root.global_position
-	# Per-slash damage comes from the equipped sword (gems will layer crits on
-	# top in a future spec).
-	var base_damage: int = equipped_sword.base_damage
-	var final_damage: int = base_damage
+	# Per-slash damage = sword base × gem proc multiplier (1.0 if no proc).
+	var damage_multiplier: float = _current_slash_ctx.damage_multiplier if _current_slash_ctx != null else 1.0
+	var dealt_damage: int = roundi(float(equipped_sword.base_damage) * damage_multiplier)
+	var final_damage: int = dealt_damage
 	var is_back_hit: bool = false
 	if enemy_root.has_method("take_dash_hit"):
-		var result: Variant = enemy_root.take_dash_hit(base_damage, _dash_direction)
+		var result: Variant = enemy_root.take_dash_hit(dealt_damage, _dash_direction)
 		if result is Dictionary:
-			final_damage = int(result.get("final_damage", base_damage))
+			final_damage = int(result.get("final_damage", dealt_damage))
 			is_back_hit = bool(result.get("is_back_hit", false))
 	hit_landed.emit(enemy_root, final_damage, hit_position, _dash_direction, is_back_hit)
+	# Element-color flash for procced slashes. Tints the enemy root; the
+	# dummy's own visual.modulate white flash multiplies on top.
+	if _current_slash_ctx != null and _current_slash_ctx.procced_gems.size() > 0:
+		_flash_proc_color(enemy_root, _current_slash_ctx.flash_color)
 
 # ===== Gem dispatchers =====
 
@@ -479,6 +502,55 @@ func _dispatch_gems_on_slash(target: Node, _final_damage: int, _position: Vector
 	for gem in equipped_weapon_gems:
 		if gem != null:
 			gem.on_slash(self, target, dash_direction)
+
+func _on_weapon_fired_for_gems(_direction: Vector2) -> void:
+	# Build a fresh slash context and roll every equipped gem.
+	var ctx := SlashContext.new()
+	for gem in equipped_weapon_gems:
+		if gem == null:
+			continue
+		if randf() < Element.base_chance(gem.element):
+			ctx.procced_gems.append(gem)
+	# Single proc → on_proc; 2+ → on_combo on each (suppresses on_proc).
+	var proc_count: int = ctx.procced_gems.size()
+	if proc_count == 1:
+		ctx.procced_gems[0].on_proc(self, ctx)
+	elif proc_count >= 2:
+		for i in proc_count:
+			var gem: WeaponGem = ctx.procced_gems[i]
+			var partners: Array = []
+			for j in proc_count:
+				if j != i:
+					partners.append(ctx.procced_gems[j])
+			gem.on_combo(self, partners, ctx)
+	# Resolve flash color from procced elements.
+	if proc_count == 1:
+		ctx.flash_color = Element.color(ctx.procced_gems[0].element)
+	elif proc_count >= 2:
+		var r: float = 0.0
+		var g: float = 0.0
+		var b: float = 0.0
+		for gem in ctx.procced_gems:
+			var c: Color = Element.color(gem.element)
+			r += c.r
+			g += c.g
+			b += c.b
+		var n: float = float(proc_count)
+		ctx.flash_color = Color(r / n, g / n, b / n, 1.0)
+	_current_slash_ctx = ctx
+
+func _on_dash_ended_for_gems(_traveled: Vector2) -> void:
+	_current_slash_ctx = null
+
+func _flash_proc_color(target: Node, color: Color) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	if not (target is CanvasItem):
+		return
+	var canvas := target as CanvasItem
+	canvas.modulate = color
+	var tween: Tween = create_tween()
+	tween.tween_property(canvas, "modulate", Color(1, 1, 1, 1), gem_tuning.proc_flash_duration)
 
 # ===== Trail =====
 

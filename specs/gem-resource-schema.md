@@ -1,6 +1,6 @@
 # gem-resource-schema
 
-**Status:** Shipped
+**Status:** Synced 2026-05-16
 
 ## Goal
 
@@ -19,16 +19,17 @@ enum Kind { FIRE, WATER, ICE, WIND, METAL, LIGHTNING }
 static func display_name(kind: Kind) -> String       # "Fire", "Water", …
 static func base_chance(kind: Kind) -> float         # element-specific proc probability
 static func base_damage_multiplier(kind: Kind) -> float
+static func color(kind: Kind) -> Color               # added by weapon-gem-crit-proc
 ```
 Shared by `WeaponGem`, per-element SFX, combo content, and future visuals. Tunable element values live here, not on individual gems.
 
 `WeaponGem` (`scripts/gems/weapon_gem.gd`, `class_name WeaponGem`) — concrete Resource. A gem is just a pointer at an element; all base numbers come from `Element.*` lookups. Upgrade state lives elsewhere (added by `upgrade-card-draft` in M15).
 - `element: Element.Kind` — drives combos, per-element SFX, per-element special dispatch. UI label resolved via `Element.display_name(element)`. Base proc chance + multiplier resolved via `Element.base_chance(element)` / `Element.base_damage_multiplier(element)`.
-- Hooks (default implementations are no-ops; per-element specials added in `weapon-gem-roster` as a `match self.element` inside these methods, not via subclassing):
+- Hooks (defaults: no-ops except `on_proc` which applies the per-element multiplier; per-element specials added in `weapon-gem-roster` as a `match self.element` inside these methods, not via subclassing):
   - `on_slash(player: Node, target: Node, dash_direction: Vector2) -> void` — every contact on a slash dash.
-  - `on_proc(player: Node, target: Node, dash_direction: Vector2) -> void` — this gem rolled a crit.
+  - `on_proc(player: Node, ctx: SlashContext) -> void` — fires once per slash when this gem is the only one to proc (see `weapon-gem-crit-proc`). Default body: `ctx.damage_multiplier *= Element.base_damage_multiplier(element)` + element tag.
   - `on_kill(player: Node, target: Node) -> void` — slash dropped the target.
-  - `on_combo(player: Node, partner_gems: Array[WeaponGem], target: Node) -> void` — multi-gem proc on the same slash.
+  - `on_combo(player: Node, partner_gems: Array, ctx: SlashContext) -> void` — 2+ gems proc'd this slash; fires once per slash on each procced gem, suppresses `on_proc`. Default body: no-op.
 
 No subclasses per element — 6 `.tres` instances differ only in their `element` field. `LogWeaponGem` is the lone subclass (debug-only, not a "seventh element").
 
@@ -60,7 +61,7 @@ Player (`scripts/player.gd`):
 - More gems equipped than `gem_slot_count` permits: this spec doesn't enforce the cap; upgrade-card-draft (M15) will guard at insertion time.
 - Null entry inside `equipped_weapon_gems`: dispatcher skips, no warning.
 - Player runs without going through selection: RunState's gem fields stay at defaults; player exports take over.
-- Crit-roll math, combo detection, mega-combo (3+) effect: separate `weapon-gem-crit-proc` and `gem-combo-content` specs.
+- Crit-roll math, combo detection, mega-combo (3+) effect: `weapon-gem-crit-proc` (rolls, single-proc / combo dispatch, `SlashContext`) and `gem-combo-content` (element-pair content) own these.
 - Amulet gem dispatcher wiring (on_equip / on_tick / etc.): defined here, fired when `amulet-gem-roster` lands.
 - Out of scope: per-element SFX, gem upgrade math, save/load, gem icons, UI to view equipped gems.
 
