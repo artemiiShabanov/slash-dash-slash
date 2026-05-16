@@ -2,12 +2,12 @@ class_name Element
 extends RefCounted
 
 ## Element identity for weapon gems. Owns per-kind base values (proc chance,
-## crit multiplier) and the display name. Gem instances just store a `Kind`;
-## everything else flows through static lookups here.
+## crit multiplier, color) and the gem display name + flavor. Gem instances
+## just store a `Kind`; everything else flows through static lookups here.
 ##
 ## Per-element specials live as `match self.element` arms inside `WeaponGem`'s
-## hooks (added by `weapon-gem-roster` in M7); this class only holds identity
-## and base tunables.
+## hooks (see `weapon-gem-roster`); this class only holds identity and base
+## tunables.
 
 enum Kind {
 	FIRE,
@@ -18,16 +18,41 @@ enum Kind {
 	LIGHTNING,
 }
 
-## Human-readable label for selection UI, upgrade cards, debug logs.
+## Gem display name (the *item* name, not the bare kind label).
+## Used by upgrade cards / inventory UI.
 static func display_name(kind: int) -> String:
 	match kind:
-		Kind.FIRE: return "Fire"
-		Kind.WATER: return "Water"
-		Kind.ICE: return "Ice"
-		Kind.WIND: return "Wind"
-		Kind.METAL: return "Metal"
-		Kind.LIGHTNING: return "Lightning"
+		Kind.FIRE: return "Ember Memo"
+		Kind.WATER: return "Cooler Drop"
+		Kind.ICE: return "Freezer Burn"
+		Kind.WIND: return "HVAC Whisper"
+		Kind.METAL: return "Three-Hole Punch"
+		Kind.LIGHTNING: return "Static Cling"
 	return "Unknown"
+
+## Short flavor + mechanical hint shown alongside the display name.
+static func description(kind: int) -> String:
+	match kind:
+		Kind.FIRE: return "A coffee-stained dispatch that smolders. Sets enemies alight."
+		Kind.WATER: return "Bottled from the water cooler. Fattens the cut and softens the next one."
+		Kind.ICE: return "Pried from the breakroom freezer. Slows everything it touches."
+		Kind.WIND: return "The vent's complaint, weaponized. Wide cuts, shoved bodies."
+		Kind.METAL: return "Bureaucracy as blade. Hits harder than anything else."
+		Kind.LIGHTNING: return "Loose office static. Strikes leave enemies twitching, still."
+	return ""
+
+## Lowercase, ASCII-friendly tag stem ("fire", "water", …). Used to build
+## SlashContext tags like `&"fire_proc"`. Distinct from display_name (which
+## is human-facing) so that renaming gems doesn't break tag matching.
+static func kind_name(kind: int) -> String:
+	match kind:
+		Kind.FIRE: return "fire"
+		Kind.WATER: return "water"
+		Kind.ICE: return "ice"
+		Kind.WIND: return "wind"
+		Kind.METAL: return "metal"
+		Kind.LIGHTNING: return "lightning"
+	return "unknown"
 
 ## Per-element base proc chance in `[0, 1]`. Tuned roughly to keep total proc
 ## frequency in a similar range across elements (rare = high mult, common = low).

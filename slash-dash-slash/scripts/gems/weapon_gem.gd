@@ -5,11 +5,18 @@ extends Resource
 ## (chance, multiplier, display name, color) come from `Element.*` static
 ## lookups. Upgrade state will be added by `upgrade-card-draft` (M15).
 ##
-## Per-element specials are dispatched inside the hook methods via
-## `match self.element` (no subclasses per element). `LogWeaponGem` is the
-## only subclass and is debug-only.
+## Per-element specials are dispatched inside `on_proc` via
+## `match self.element`. No subclasses per element; instances are produced
+## via `WeaponGem.create(kind)` rather than per-element `.tres` files.
 
 @export var element: int = Element.Kind.FIRE  # Element.Kind value
+
+## Factory for a fresh gem of the given element. Future upgrade specs may
+## extend this to apply default upgrade state.
+static func create(kind: int) -> WeaponGem:
+	var gem := WeaponGem.new()
+	gem.element = kind
+	return gem
 
 # ===== Hooks (override in concrete gems; default no-op except on_proc) =====
 
@@ -18,11 +25,24 @@ func on_slash(_player: Node, _target: Node, _dash_direction: Vector2) -> void:
 	pass
 
 ## This gem rolled a crit on the current slash AND it is the only gem to do
-## so. Fires once per slash, before any contact. Default body: multiply the
-## ctx damage by this element's base multiplier and tag the slash.
-func on_proc(_player: Node, ctx: SlashContext) -> void:
+## so. Fires once per slash, before any contact. Default body: apply the
+## per-element damage multiplier, tag the slash, and dispatch per-element
+## slash-wide effects (WATER radius bonus, WIND radius multiplier). Per-contact
+## effects (burn / vuln / slow / knockback / stun) are applied by Player._try_hit
+## reading the tags below.
+func on_proc(player: Node, ctx: SlashContext) -> void:
 	ctx.damage_multiplier *= Element.base_damage_multiplier(element)
-	ctx.tags.append(StringName(Element.display_name(element).to_lower() + "_proc"))
+	ctx.tags.append(StringName(Element.kind_name(element) + "_proc"))
+	var tuning: WeaponGemTuning = player.gem_tuning
+	if tuning == null:
+		return
+	match element:
+		Element.Kind.WATER:
+			ctx.extra_hit_radius += tuning.water_radius_bonus
+		Element.Kind.WIND:
+			ctx.hit_radius_multiplier = tuning.wind_radius_mult
+		_:
+			pass
 
 ## Slash dropped the target to <= 0 HP.
 func on_kill(_player: Node, _target: Node) -> void:

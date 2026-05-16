@@ -1,6 +1,6 @@
 # basic-enemy-ai
 
-**Status:** Synced 2026-05-09
+**Status:** Synced 2026-05-16 (weapon-gem-roster)
 
 ## Goal
 
@@ -26,6 +26,8 @@ DummyEnemy refactored to a `CharacterBody2D` root so wall collision works:
 Player body uses `collision_layer = 8`, `collision_mask = 1` so it collides with walls only — passes freely through enemies (and vice versa, since enemies' mask doesn't include layer 8).
 
 `scripts/dummy_enemy.gd` extends `CharacterBody2D`; caches `_player` by group lookup; per-physics-frame chases or runs the windup→fire→cooldown cycle. Internal state: `_windup_remaining: float`, `_cooldown_remaining: float`, `_is_winding_up: bool`. Movement uses `move_and_slide` unless `can_go_through_walls` is true (then `global_position += step`).
+
+Since `weapon-gem-roster`, DummyEnemy also carries gem-status state — `_burns`, `_slows`, `_stuns`, `_vulns` arrays (each entry is an independent timed instance) plus `apply_burn` / `apply_slow` / `apply_stun` / `apply_vulnerability` / `apply_knockback` duck-typed methods. AI gating: while any stun is active, movement and windup are zeroed; otherwise chase speed is scaled by `1.0 - clampf(Σ slow_pct, 0, 0.95)`. Burn instances tick fractional damage with per-instance residual carryover so sub-1 ticks accumulate.
 
 `scripts/player.gd` gains:
 - `signal damaged(amount: int)` — emitted on each `take_damage` call.

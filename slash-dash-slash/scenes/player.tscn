@@ -1,15 +1,12 @@
-[gd_scene load_steps=13 format=3 uid="uid://di1jjoeakpifk"]
+[gd_scene load_steps=10 format=3 uid="uid://di1jjoeakpifk"]
 
 [ext_resource type="Script" uid="uid://c1s7cnsv4scd5" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Resource" uid="uid://bgqmkn601ssci" path="res://resources/dash_tuning.tres" id="2_tuning"]
 [ext_resource type="PackedScene" path="res://scenes/ui/stamina_pips.tscn" id="4_pips"]
 [ext_resource type="Resource" uid="uid://pjxd7pd022yv" path="res://resources/equipment/swords/executive_katana.tres" id="4_tuyoq"]
 [ext_resource type="Resource" uid="uid://b1hittunbas3" path="res://resources/hit_tuning.tres" id="5_htune"]
-[ext_resource type="Script" uid="uid://cdo465whofkit" path="res://scripts/gems/weapon_gem.gd" id="6_smehm"]
 [ext_resource type="Resource" uid="uid://b1idlanyard" path="res://resources/equipment/amulets/id_lanyard.tres" id="7_amulet"]
-[ext_resource type="Resource" uid="uid://b1loggem" path="res://resources/gems/log_weapon_gem.tres" id="8_loggem"]
-[ext_resource type="Resource" path="res://resources/gems/log_weapon_gem_water.tres" id="9_loggemw"]
-[ext_resource type="Resource" path="res://resources/weapon_gem_tuning.tres" id="10_gtune"]
+[ext_resource type="Resource" uid="uid://b1wgtune001" path="res://resources/weapon_gem_tuning.tres" id="10_gtune"]
 
 [sub_resource type="CircleShape2D" id="cs_player"]
 radius = 6.0
@@ -25,7 +22,7 @@ hit_tuning = ExtResource("5_htune")
 gem_tuning = ExtResource("10_gtune")
 equipped_sword = ExtResource("4_tuyoq")
 equipped_amulet = ExtResource("7_amulet")
-equipped_weapon_gems = Array[ExtResource("6_smehm")]([ExtResource("8_loggem"), ExtResource("9_loggemw")])
+debug_loadout = Array[int]([0, 1, 2, 3, 4, 5])
 
 [node name="Body" type="Polygon2D" parent="."]
 color = Color(0.96, 0.97, 0.92, 1)

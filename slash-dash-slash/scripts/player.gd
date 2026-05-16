@@ -74,6 +74,12 @@ const MIN_DURATION: float = 0.01
 ## these exports are debug fallbacks for direct-scene testing.
 @export var equipped_weapon_gems: Array[WeaponGem] = []
 
+## Debug-only loadout: Element.Kind ints. Resolved to fresh WeaponGem
+## instances in `_ready` only if RunState and `equipped_weapon_gems` are
+## both empty. Lets player.tscn declare a roster without storing per-element
+## Resource files.
+@export var debug_loadout: Array[int] = []
+
 ## Amulet gem for this run. RunState takes precedence when set.
 @export var equipped_amulet_gem: AmuletGem
 
@@ -175,10 +181,15 @@ func _ready() -> void:
 		equipped_amulet = AmuletStats.new()
 	health = equipped_amulet.max_health
 
-	# Gems: RunState wins if it has any; else the scene-level exports stand
-	# (useful for direct-scene debugging via player.tscn).
+	# Gems: RunState wins; else scene-level Resource export; else debug_loadout
+	# (factory) for tscn-authored debug rosters without per-element files.
 	if RunState.equipped_weapon_gems.size() > 0:
 		equipped_weapon_gems = RunState.equipped_weapon_gems
+	elif equipped_weapon_gems.is_empty() and not debug_loadout.is_empty():
+		var resolved: Array[WeaponGem] = []
+		for kind in debug_loadout:
+			resolved.append(WeaponGem.create(kind))
+		equipped_weapon_gems = resolved
 	if RunState.equipped_amulet_gem != null:
 		equipped_amulet_gem = RunState.equipped_amulet_gem
 
@@ -430,6 +441,10 @@ func _on_player_died() -> void:
 # ===== Hit detection =====
 
 func _apply_hit_radius() -> void:
+	# Baseline radius (no proc): body + tuning offset, multiplier 1.0.
+	_set_hit_radius(0.0, 1.0)
+
+func _set_hit_radius(extra: float, multiplier: float) -> void:
 	# Read body radius from the existing CollisionShape2D so the player scene
 	# stays the source of truth for body size.
 	var body_radius: float = 6.0
@@ -437,10 +452,15 @@ func _apply_hit_radius() -> void:
 	if body_shape != null and body_shape.shape is CircleShape2D:
 		body_radius = (body_shape.shape as CircleShape2D).radius
 	if hit_area_shape.shape is CircleShape2D:
-		(hit_area_shape.shape as CircleShape2D).radius = body_radius + hit_tuning.hit_radius_offset
+		(hit_area_shape.shape as CircleShape2D).radius = (body_radius + hit_tuning.hit_radius_offset + extra) * multiplier
 
 func _on_weapon_fired_for_hit(_direction: Vector2) -> void:
 	_hit_this_dash.clear()
+	# Resize HitArea per this slash's proc context (gems handler runs first).
+	if _current_slash_ctx != null:
+		_set_hit_radius(_current_slash_ctx.extra_hit_radius, _current_slash_ctx.hit_radius_multiplier)
+	else:
+		_apply_hit_radius()
 	hit_area.monitoring = true
 	# Catch enemies already overlapping the HitArea (Godot's area_entered only
 	# fires for transitions). Defer to next physics frame so monitoring takes
@@ -449,6 +469,8 @@ func _on_weapon_fired_for_hit(_direction: Vector2) -> void:
 
 func _on_dash_ended_for_hit(_traveled: Vector2) -> void:
 	hit_area.monitoring = false
+	# Restore baseline radius for the next slash (or initial overlap check).
+	_apply_hit_radius()
 
 func _on_hit_area_area_entered(area: Area2D) -> void:
 	_try_hit(area)
@@ -495,6 +517,9 @@ func _try_hit(target: Node) -> void:
 	# dummy's own visual.modulate white flash multiplies on top.
 	if _current_slash_ctx != null and _current_slash_ctx.procced_gems.size() > 0:
 		_flash_proc_color(enemy_root, _current_slash_ctx.flash_color)
+	# Per-element per-contact effects, dispatched off ctx tags.
+	if _current_slash_ctx != null and is_instance_valid(enemy_root):
+		_apply_element_effects(enemy_root, dealt_damage)
 
 # ===== Gem dispatchers =====
 
@@ -541,6 +566,22 @@ func _on_weapon_fired_for_gems(_direction: Vector2) -> void:
 
 func _on_dash_ended_for_gems(_traveled: Vector2) -> void:
 	_current_slash_ctx = null
+
+func _apply_element_effects(enemy_root: Node, _dealt_damage: int) -> void:
+	if gem_tuning == null:
+		return
+	var tags := _current_slash_ctx.tags
+	if &"fire_proc" in tags and enemy_root.has_method("apply_burn"):
+		var dmg_per_tick: float = float(equipped_sword.base_damage) * gem_tuning.fire_burn_damage_mult
+		enemy_root.apply_burn(dmg_per_tick, gem_tuning.fire_burn_tick_interval, gem_tuning.fire_burn_duration)
+	if &"water_proc" in tags and enemy_root.has_method("apply_vulnerability"):
+		enemy_root.apply_vulnerability(gem_tuning.water_vulnerability_mult, gem_tuning.water_vulnerability_duration)
+	if &"ice_proc" in tags and enemy_root.has_method("apply_slow"):
+		enemy_root.apply_slow(gem_tuning.ice_slow_pct, gem_tuning.ice_slow_duration)
+	if &"wind_proc" in tags and enemy_root.has_method("apply_knockback"):
+		enemy_root.apply_knockback(_dash_direction, gem_tuning.wind_knockback_distance)
+	if &"lightning_proc" in tags and enemy_root.has_method("apply_stun"):
+		enemy_root.apply_stun(gem_tuning.lightning_stun_duration)
 
 func _flash_proc_color(target: Node, color: Color) -> void:
 	if target == null or not is_instance_valid(target):

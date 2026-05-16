@@ -5,10 +5,17 @@ class_name DummyEnemy
 ## Stats sourced from `EnemyStats`; abilities dispatched per
 ## `enemy-ability-base`. Basic AI per `basic-enemy-ai`: chase the player at
 ## `move_speed`; when within `attack_range`, stop and attack at `attack_speed`.
+##
+## Gem-status interface (per `weapon-gem-roster`):
+##   apply_burn / apply_slow / apply_stun / apply_vulnerability / apply_knockback
+## Burns, slows, stuns, vulns are stored as parallel instances (each with its
+## own timer) so successive procs stack.
 
 const FLASH_FRONT: Color = Color(1.3, 1.3, 1.3, 1.0)
 const FLASH_BACK: Color = Color(3.0, 3.0, 3.0, 1.0)
 const FLASH_FADE_DURATION: float = 0.15
+const SLOW_TINT: Color = Color(0.7, 0.85, 1.0)
+const SLOW_STACK_CAP: float = 0.95  # never reaches 100% — stun's job.
 
 @export var stats: EnemyStats
 
@@ -30,6 +37,18 @@ var _windup_remaining: float = 0.0
 var _cooldown_remaining: float = 0.0
 var _is_winding_up: bool = false
 
+# ===== Gem-status state =====
+
+# Each entry: { damage_per_tick: float, tick_interval: float,
+#               time_to_next_tick: float, time_remaining: float, residual: float }
+var _burns: Array = []
+# Each entry: { slow_pct: float, time_remaining: float }
+var _slows: Array = []
+# Each entry: { time_remaining: float }
+var _stuns: Array = []
+# Each entry: { damage_mult: float, time_remaining: float }
+var _vulns: Array = []
+
 func _ready() -> void:
 	add_to_group("enemy")
 	if stats == null:
@@ -48,11 +67,25 @@ func _physics_process(delta: float) -> void:
 	if _is_winding_up:
 		_windup_remaining = maxf(0.0, _windup_remaining - delta)
 
+	# Tick status effects (may queue_free us via burn damage).
+	_tick_status(delta)
+	if not is_instance_valid(self):
+		return
+
 	# Refresh player ref if we lost it (player freed, reload, etc.).
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
 		if _player == null:
 			return
+
+	# Stun overrides everything: stand still, drop windup, don't chase.
+	if _is_stunned():
+		_is_winding_up = false
+		_windup_remaining = 0.0
+		velocity = Vector2.ZERO
+		if not stats.can_go_through_walls:
+			move_and_slide()
+		return
 
 	var to_player: Vector2 = _player.global_position - global_position
 	var distance: float = to_player.length()
@@ -71,6 +104,9 @@ func _physics_process(delta: float) -> void:
 			facing = Vector2.RIGHT.rotated(current_angle + step)
 		arrow.rotation = facing.angle()
 
+	var speed_mult: float = _slow_multiplier()
+	var effective_speed: float = stats.move_speed * speed_mult
+
 	# Chase or attack.
 	if distance > stats.attack_range:
 		# Out of range cancels any in-progress windup; chase forward.
@@ -78,9 +114,9 @@ func _physics_process(delta: float) -> void:
 		_windup_remaining = 0.0
 		var move_dir: Vector2 = to_player.normalized() if distance > 0.0 else Vector2.ZERO
 		if stats.can_go_through_walls:
-			global_position += move_dir * stats.move_speed * delta
+			global_position += move_dir * effective_speed * delta
 		else:
-			velocity = move_dir * stats.move_speed
+			velocity = move_dir * effective_speed
 			move_and_slide()
 	else:
 		# In range — stop, then run the windup→fire→cooldown cycle.
@@ -110,7 +146,9 @@ func _do_attack() -> void:
 func take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary:
 	var is_back_hit: bool = facing.length() > 0.0 and dash_direction.dot(facing) > 0.0
 	var armor: float = stats.armor_back if is_back_hit else stats.armor_front
-	var final_damage: int = maxi(0, roundi(float(damage) * (1.0 - armor)))
+	var armored: int = maxi(0, roundi(float(damage) * (1.0 - armor)))
+	# Vulnerability multiplier (product of live stacks) applies after armor.
+	var final_damage: int = roundi(float(armored) * _vulnerability_product())
 	health -= final_damage
 	_flash(FLASH_BACK if is_back_hit else FLASH_FRONT)
 	_dispatch_on_hit(final_damage, dash_direction, is_back_hit)
@@ -125,6 +163,104 @@ func _flash(color: Color) -> void:
 	visual.modulate = color
 	_flash_tween = create_tween()
 	_flash_tween.tween_property(visual, "modulate", Color(1, 1, 1, 1), FLASH_FADE_DURATION)
+
+# ===== Gem-status: apply methods =====
+
+func apply_burn(damage_per_tick: float, tick_interval: float, duration: float) -> void:
+	_burns.append({
+		"damage_per_tick": damage_per_tick,
+		"tick_interval": tick_interval,
+		"time_to_next_tick": tick_interval,
+		"time_remaining": duration,
+		"residual": 0.0,
+	})
+
+func apply_slow(slow_pct: float, duration: float) -> void:
+	_slows.append({"slow_pct": clampf(slow_pct, 0.0, 1.0), "time_remaining": duration})
+
+func apply_stun(duration: float) -> void:
+	_stuns.append({"time_remaining": duration})
+
+func apply_vulnerability(damage_mult: float, duration: float) -> void:
+	_vulns.append({"damage_mult": damage_mult, "time_remaining": duration})
+
+func apply_knockback(direction: Vector2, distance: float) -> void:
+	if direction.length() > 0.0:
+		global_position += direction.normalized() * distance
+
+# ===== Gem-status: tick =====
+
+func _tick_status(delta: float) -> void:
+	# Burns — fractional damage accumulates via per-instance residual so a
+	# 0.2/tick burn against base=2 eventually deals 1 HP rather than rounding
+	# silently to 0.
+	var i: int = _burns.size() - 1
+	while i >= 0:
+		var b: Dictionary = _burns[i]
+		b.time_to_next_tick -= delta
+		while b.time_to_next_tick <= 0.0 and b.time_remaining > 0.0:
+			var raw: float = b.damage_per_tick + b.residual
+			var whole: int = int(floor(raw))
+			b.residual = raw - float(whole)
+			if whole > 0:
+				_apply_burn_damage(whole)
+				if not is_instance_valid(self):
+					return  # queue_free hit; bail.
+			b.time_to_next_tick += b.tick_interval
+		b.time_remaining -= delta
+		if b.time_remaining <= 0.0:
+			_burns.remove_at(i)
+		i -= 1
+	_prune_timed(_slows, delta)
+	_prune_timed(_stuns, delta)
+	_prune_timed(_vulns, delta)
+	_apply_status_tint()
+
+func _prune_timed(arr: Array, delta: float) -> void:
+	var i: int = arr.size() - 1
+	while i >= 0:
+		arr[i].time_remaining -= delta
+		if arr[i].time_remaining <= 0.0:
+			arr.remove_at(i)
+		i -= 1
+
+func _apply_burn_damage(damage: int) -> void:
+	health -= damage
+	_dispatch_on_hit(damage, Vector2.ZERO, false)
+	if health <= 0:
+		_dispatch_on_death()
+		queue_free()
+
+func _is_stunned() -> bool:
+	return _stuns.size() > 0
+
+func _slow_multiplier() -> float:
+	if _slows.is_empty():
+		return 1.0
+	var sum: float = 0.0
+	for s in _slows:
+		sum += float(s.slow_pct)
+	return 1.0 - clampf(sum, 0.0, SLOW_STACK_CAP)
+
+func _vulnerability_product() -> float:
+	var p: float = 1.0
+	for v in _vulns:
+		p *= float(v.damage_mult)
+	return p
+
+# Status-tint priority: stun > burn > slow > white. The hit flash tween still
+# wins briefly when active; status tint reasserts on the next physics frame.
+func _apply_status_tint() -> void:
+	if _flash_tween != null and _flash_tween.is_valid():
+		return
+	if _is_stunned():
+		visual.modulate = Element.color(Element.Kind.ICE)
+	elif _burns.size() > 0:
+		visual.modulate = Element.color(Element.Kind.FIRE)
+	elif _slows.size() > 0:
+		visual.modulate = SLOW_TINT
+	else:
+		visual.modulate = Color(1, 1, 1, 1)
 
 # ===== Ability dispatchers =====
 

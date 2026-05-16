@@ -1,6 +1,6 @@
 # gem-resource-schema
 
-**Status:** Synced 2026-05-16
+**Status:** Synced 2026-05-16 (weapon-gem-roster)
 
 ## Goal
 
@@ -8,7 +8,7 @@ Define `WeaponGem` and `AmuletGem` Resource base classes plus the shared `Elemen
 
 ## Player-facing behavior
 
-- No visible gameplay change yet — schema only. A placeholder `LogWeaponGem` prints to the console on every slash so the dispatcher wiring is verifiable.
+- No visible gameplay change yet — schema only. (The `LogWeaponGem` debug subclass that originally lived here was retired by `weapon-gem-roster`; real elemental gems now drive the dispatcher.)
 - A sword's `gem_slot_count` continues to declare capacity; this spec adds the *contents* of those slots as `RunState` state.
 
 ## Data
@@ -16,22 +16,25 @@ Define `WeaponGem` and `AmuletGem` Resource base classes plus the shared `Elemen
 `Element` (`scripts/gems/element.gd`, `class_name Element`) — the source of per-element identity, base tunables, and display labels:
 ```
 enum Kind { FIRE, WATER, ICE, WIND, METAL, LIGHTNING }
-static func display_name(kind: Kind) -> String       # "Fire", "Water", …
+static func display_name(kind: Kind) -> String       # gem name: "Ember Memo", "Cooler Drop", …
+static func description(kind: Kind) -> String        # flavor + mechanical hint (added by weapon-gem-roster)
+static func kind_name(kind: Kind) -> String          # tag-safe stem: "fire", "water", … (added by weapon-gem-roster)
 static func base_chance(kind: Kind) -> float         # element-specific proc probability
 static func base_damage_multiplier(kind: Kind) -> float
 static func color(kind: Kind) -> Color               # added by weapon-gem-crit-proc
 ```
-Shared by `WeaponGem`, per-element SFX, combo content, and future visuals. Tunable element values live here, not on individual gems.
+Shared by `WeaponGem`, per-element SFX, combo content, and future visuals. Tunable element values live here, not on individual gems. `display_name` returns the gem's *item* name (used by UI); `kind_name` returns the lowercase stem used to build SlashContext tags (e.g. `&"fire_proc"`) — kept distinct so renaming gems doesn't break tag matching.
 
 `WeaponGem` (`scripts/gems/weapon_gem.gd`, `class_name WeaponGem`) — concrete Resource. A gem is just a pointer at an element; all base numbers come from `Element.*` lookups. Upgrade state lives elsewhere (added by `upgrade-card-draft` in M15).
 - `element: Element.Kind` — drives combos, per-element SFX, per-element special dispatch. UI label resolved via `Element.display_name(element)`. Base proc chance + multiplier resolved via `Element.base_chance(element)` / `Element.base_damage_multiplier(element)`.
-- Hooks (defaults: no-ops except `on_proc` which applies the per-element multiplier; per-element specials added in `weapon-gem-roster` as a `match self.element` inside these methods, not via subclassing):
+- `static func create(kind: int) -> WeaponGem` (added by `weapon-gem-roster`) — factory; returns a fresh instance with `element` set. Replaces per-element `.tres` files.
+- Hooks (defaults: no-ops except `on_proc` which applies the per-element multiplier + tag; per-element specials live in `weapon-gem-roster` as a `match self.element` inside `on_proc`, not via subclassing):
   - `on_slash(player: Node, target: Node, dash_direction: Vector2) -> void` — every contact on a slash dash.
-  - `on_proc(player: Node, ctx: SlashContext) -> void` — fires once per slash when this gem is the only one to proc (see `weapon-gem-crit-proc`). Default body: `ctx.damage_multiplier *= Element.base_damage_multiplier(element)` + element tag.
+  - `on_proc(player: Node, ctx: SlashContext) -> void` — fires once per slash when this gem is the only one to proc (see `weapon-gem-crit-proc`). Default body: `ctx.damage_multiplier *= Element.base_damage_multiplier(element)`, `ctx.tags.append(StringName(Element.kind_name(element) + "_proc"))`, plus per-element ctx writes (e.g. WATER `extra_hit_radius`, WIND `hit_radius_multiplier`).
   - `on_kill(player: Node, target: Node) -> void` — slash dropped the target.
   - `on_combo(player: Node, partner_gems: Array, ctx: SlashContext) -> void` — 2+ gems proc'd this slash; fires once per slash on each procced gem, suppresses `on_proc`. Default body: no-op.
 
-No subclasses per element — 6 `.tres` instances differ only in their `element` field. `LogWeaponGem` is the lone subclass (debug-only, not a "seventh element").
+No subclasses per element. No per-element `.tres` either since `weapon-gem-roster` — instances come from `WeaponGem.create(kind)`.
 
 `AmuletGem` (`scripts/gems/amulet_gem.gd`, `class_name AmuletGem`) — abstract Resource:
 - `display_name: String`, `description: String`.
@@ -53,8 +56,7 @@ Player (`scripts/player.gd`):
 - `_ready`: prefer `RunState.equipped_weapon_gems` if non-empty, else export, else `[]`.
 - `_ready` connects `hit_landed` to a `_dispatch_gems_on_slash` handler that iterates `equipped_weapon_gems` and calls `on_slash(self, target, dash_direction)` for each non-null gem. The crit/proc/combo flow lands in `weapon-gem-crit-proc`.
 
-`LogWeaponGem` (`scripts/gems/log_weapon_gem.gd`, `class_name LogWeaponGem`) — concrete subclass, prints tagged message (including the resolved element name) on each hook. Element defaults to `FIRE` arbitrarily.
-`resources/gems/log_weapon_gem.tres` — single instance for smoke test.
+`LogWeaponGem` — retired by `weapon-gem-roster` (along with the two `log_weapon_gem*.tres`). Debug verification of the dispatcher now happens through real elemental gems wired via `Player.debug_loadout: Array[int]`.
 
 ## Edge cases & out-of-scope
 

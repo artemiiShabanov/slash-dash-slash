@@ -1,7 +1,18 @@
 [gd_resource type="Resource" script_class="WeaponGemTuning" load_steps=2 format=3 uid="uid://b1wgtune001"]
 
-[ext_resource type="Script" path="res://scripts/resources/weapon_gem_tuning.gd" id="1_wgtune"]
+[ext_resource type="Script" uid="uid://yduqhoy7j1bn" path="res://scripts/resources/weapon_gem_tuning.gd" id="1_wgtune"]
 
 [resource]
 script = ExtResource("1_wgtune")
 proc_flash_duration = 0.12
+fire_burn_duration = 3.0
+fire_burn_tick_interval = 0.5
+fire_burn_damage_mult = 0.1
+water_radius_bonus = 4.0
+water_vulnerability_mult = 1.25
+water_vulnerability_duration = 3.0
+ice_slow_pct = 0.5
+ice_slow_duration = 2.0
+wind_radius_mult = 1.5
+wind_knockback_distance = 24.0
+lightning_stun_duration = 1.0
