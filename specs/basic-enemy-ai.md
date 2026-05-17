@@ -1,6 +1,6 @@
 # basic-enemy-ai
 
-**Status:** Synced 2026-05-16 (weapon-gem-roster)
+**Status:** Synced 2026-05-16 (amulet-gem-roster)
 
 ## Goal
 
@@ -30,11 +30,11 @@ Player body uses `collision_layer = 8`, `collision_mask = 1` so it collides with
 Since `weapon-gem-roster`, DummyEnemy also carries gem-status state — `_burns`, `_slows`, `_stuns`, `_vulns` arrays (each entry is an independent timed instance) plus `apply_burn` / `apply_slow` / `apply_stun` / `apply_vulnerability` / `apply_knockback` duck-typed methods. AI gating: while any stun is active, movement and windup are zeroed; otherwise chase speed is scaled by `1.0 - clampf(Σ slow_pct, 0, 0.95)`. Burn instances tick fractional damage with per-instance residual carryover so sub-1 ticks accumulate.
 
 `scripts/player.gd` gains:
-- `signal damaged(amount: int)` — emitted on each `take_damage` call.
+- `signal damaged(amount: int, source: Node)` — emitted on each `take_damage` call. `source` is the attacking enemy node (or null for damage with no node source); added by `amulet-gem-roster` for Thorns.
 - `signal died` — emitted once when health drops to 0.
 - `@export var max_health: int = 5` — placeholder until amulet stats land in M5.
 - `var health: int` — runtime; initialized from `max_health` in `_ready`.
-- `func take_damage(amount: int) -> void` — clamp health, emit `damaged`, flash body red, on 0 emit `died` and disable physics + process to freeze.
+- `func take_damage(amount: int, source: Node = null) -> void` — clamp health, emit `damaged`, fire `equipped_amulet_gem.on_player_damaged`, flash body red, on 0 emit `died` and disable physics + process to freeze. `DummyEnemy._do_attack` passes `self` as source.
 - Adds self to group `"player"` in `_ready`.
 
 `_try_hit` in player.gd walks up from the Hurtbox: `var enemy_root = area.get_parent()`; group + duck-typing checks happen on `enemy_root`.

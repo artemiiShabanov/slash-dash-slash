@@ -137,7 +137,7 @@ func _do_attack() -> void:
 	if _player == null or not is_instance_valid(_player):
 		return
 	if _player.has_method("take_damage"):
-		_player.take_damage(stats.damage)
+		_player.take_damage(stats.damage, self)
 
 ## Player calls this on contact during a slash dash. Side is decided by the
 ## sign of the dot product between the dash direction and the enemy's facing.
@@ -152,10 +152,11 @@ func take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary:
 	health -= final_damage
 	_flash(FLASH_BACK if is_back_hit else FLASH_FRONT)
 	_dispatch_on_hit(final_damage, dash_direction, is_back_hit)
-	if health <= 0:
+	var killed: bool = health <= 0
+	if killed:
 		_dispatch_on_death()
 		queue_free()
-	return {"final_damage": final_damage, "is_back_hit": is_back_hit}
+	return {"final_damage": final_damage, "is_back_hit": is_back_hit, "killed": killed}
 
 func _flash(color: Color) -> void:
 	if _flash_tween != null and _flash_tween.is_valid():

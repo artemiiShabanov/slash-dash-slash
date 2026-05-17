@@ -19,8 +19,9 @@ func on_equip(_player: Node) -> void:
 func on_unequip(_player: Node) -> void:
 	pass
 
-## Player just took damage. React (vampiric, retaliation, etc.).
-func on_player_damaged(_player: Node, _amount: int) -> void:
+## Player just took damage. React (vampiric, retaliation, etc.). `source`
+## is the attacking node (may be null for damage with no node source).
+func on_player_damaged(_player: Node, _amount: int, _source: Node) -> void:
 	pass
 
 ## A slash killed an enemy. React (lifesteal, mana refill).

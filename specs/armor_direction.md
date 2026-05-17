@@ -1,6 +1,6 @@
 # armor-direction
 
-**Status:** Synced 2026-05-16 (weapon-gem-roster)
+**Status:** Synced 2026-05-16 (amulet-gem-roster)
 
 ## Goal
 
@@ -24,7 +24,7 @@ Make approach angle matter. An enemy hit from behind takes more damage than one 
   - `dot = dash_direction.dot(facing)`; `dot > 0` → back hit, else → front hit.
   - `armored = maxi(0, roundi(damage * (1.0 - armor)))`.
   - `final_damage = roundi(armored * _vulnerability_product())` — vulnerability stack from `weapon-gem-roster` (WATER) applies after armor. Without active vulnerability instances the product is 1.0 and this is a no-op.
-  - Returns `{"final_damage": final_damage, "is_back_hit": is_back_hit}` so the player's `hit_landed` signal can be populated without recomputing the side. (Initial drift introduced when `audio_sfx_palette` shipped; vulnerability factor added by `weapon-gem-roster`.)
+  - Returns `{"final_damage": final_damage, "is_back_hit": is_back_hit, "killed": bool}` so the player's `hit_landed` signal can be populated without recomputing the side, and `on_kill` amulet hooks fire without inspecting the freed enemy. (Initial drift introduced when `audio_sfx_palette` shipped; vulnerability factor added by `weapon-gem-roster`; `killed` added by `amulet-gem-roster`.)
 - Flash color constants on `DummyEnemy`:
   - `FLASH_FRONT: Color = Color(1.3, 1.3, 1.3, 1)` — mild brighten.
   - `FLASH_BACK: Color = Color(3.0, 3.0, 3.0, 1)` — strong overbright.

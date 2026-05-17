@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="WallPassAmuletGem" load_steps=2 format=3 uid="uid://b1jankey001"]
+
+[ext_resource type="Script" path="res://scripts/gems/amulets/wall_pass_amulet_gem.gd" id="1_wpass"]
+
+[resource]
+script = ExtResource("1_wpass")
+display_name = "Janitor's Master Key"
+description = "Every door opens. Walls are a suggestion."

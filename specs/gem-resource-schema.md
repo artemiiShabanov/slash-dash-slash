@@ -1,6 +1,6 @@
 # gem-resource-schema
 
-**Status:** Synced 2026-05-16 (weapon-gem-roster)
+**Status:** Synced 2026-05-16 (amulet-gem-roster)
 
 ## Goal
 
@@ -38,12 +38,12 @@ No subclasses per element. No per-element `.tres` either since `weapon-gem-roste
 
 `AmuletGem` (`scripts/gems/amulet_gem.gd`, `class_name AmuletGem`) — abstract Resource:
 - `display_name: String`, `description: String`.
-- Virtual hooks (no-op defaults):
-  - `on_equip(player: Node) -> void` — install passive modifiers (e.g., `player.set_dash_distance_modifier("amulet_gem", …)`).
-  - `on_unequip(player: Node) -> void` — clear them.
-  - `on_player_damaged(player: Node, amount: int) -> void` — reactive (vampiric, retaliation).
-  - `on_kill(player: Node, target: Node) -> void` — reactive.
-  - `on_tick(player: Node, delta: float) -> void` — continuous (auras).
+- Virtual hooks (no-op defaults). All five are dispatched by Player since `amulet-gem-roster`:
+  - `on_equip(player: Node) -> void` — install passive modifiers. Called from `Player._ready` after equipment resolves.
+  - `on_unequip(player: Node) -> void` — clear them. No call site yet (no hot-swap path); contract reserved.
+  - `on_player_damaged(player: Node, amount: int, source: Node) -> void` — reactive (vampiric, retaliation). `source` arg added by `amulet-gem-roster` for Thorns. Called from `Player.take_damage`.
+  - `on_kill(player: Node, target: Node) -> void` — reactive; called from `Player._try_hit` when the new `take_dash_hit` `killed` flag is true.
+  - `on_tick(player: Node, delta: float) -> void` — continuous (auras); called from `Player._physics_process`.
 
 `RunState` (drift on `equipment-selection-ui`):
 - `equipped_weapon_gems: Array[WeaponGem]` — default `[]`; size bounded by `equipped_sword.gem_slot_count` (caller enforces).
@@ -64,7 +64,7 @@ Player (`scripts/player.gd`):
 - Null entry inside `equipped_weapon_gems`: dispatcher skips, no warning.
 - Player runs without going through selection: RunState's gem fields stay at defaults; player exports take over.
 - Crit-roll math, combo detection, mega-combo (3+) effect: `weapon-gem-crit-proc` (rolls, single-proc / combo dispatch, `SlashContext`) and `gem-combo-content` (element-pair content) own these.
-- Amulet gem dispatcher wiring (on_equip / on_tick / etc.): defined here, fired when `amulet-gem-roster` lands.
+- Amulet gem dispatcher wiring (on_equip / on_tick / etc.): defined here, wired by `amulet-gem-roster`.
 - Out of scope: per-element SFX, gem upgrade math, save/load, gem icons, UI to view equipped gems.
 
 ## Tasks

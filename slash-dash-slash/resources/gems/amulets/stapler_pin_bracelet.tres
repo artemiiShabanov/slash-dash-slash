@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ThornsAmuletGem" load_steps=2 format=3 uid="uid://b1staplrbrclt"]
+
+[ext_resource type="Script" path="res://scripts/gems/amulets/thorns_amulet_gem.gd" id="1_thorn"]
+
+[resource]
+script = ExtResource("1_thorn")
+display_name = "Stapler Pin Bracelet"
+description = "Sharp on contact. Hit me; bleed."
+thorns_damage = 1

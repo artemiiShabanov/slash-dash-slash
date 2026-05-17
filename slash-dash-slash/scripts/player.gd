@@ -44,7 +44,7 @@ signal stamina_changed(current: int, max: int)
 signal hit_landed(target: Node, final_damage: int, position: Vector2, dash_direction: Vector2, is_back_hit: bool)
 
 ## Player took damage. Future UI / juice listens here.
-signal damaged(amount: int)
+signal damaged(amount: int, source: Node)
 
 ## Player health reached 0. Emitted once.
 signal died
@@ -193,6 +193,11 @@ func _ready() -> void:
 	if RunState.equipped_amulet_gem != null:
 		equipped_amulet_gem = RunState.equipped_amulet_gem
 
+	# Install amulet gem passives (collision_mask flips, etc.). on_player_damaged
+	# / on_kill / on_tick are dispatched at their own call sites.
+	if equipped_amulet_gem != null:
+		equipped_amulet_gem.on_equip(self)
+
 	# Dispatch on_slash to weapon gems on every contact. Proc/kill/combo
 	# dispatchers land in their own specs (weapon-gem-crit-proc etc.).
 	hit_landed.connect(_dispatch_gems_on_slash)
@@ -260,6 +265,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	# Push player position so InputSystem can compute mouse-relative aim.
 	InputSystem.player_world_position = global_position
+
+	if equipped_amulet_gem != null:
+		equipped_amulet_gem.on_tick(self, delta)
 
 	_tick_weapon(delta)
 
@@ -406,12 +414,15 @@ func _apply_loaded_modulate(is_loaded: bool) -> void:
 
 # ===== Damage =====
 
-## Called by enemy AI when an attack lands. No-ops once dead.
-func take_damage(amount: int) -> void:
+## Called by enemy AI when an attack lands. No-ops once dead. `source` is
+## the attacking node (used by reactive amulet gems like Thorns); may be null.
+func take_damage(amount: int, source: Node = null) -> void:
 	if _is_dead or amount <= 0:
 		return
 	health = maxi(0, health - amount)
-	damaged.emit(amount)
+	damaged.emit(amount, source)
+	if equipped_amulet_gem != null:
+		equipped_amulet_gem.on_player_damaged(self, amount, source)
 	_flash_damage()
 	if health <= 0:
 		_on_player_died()
@@ -507,11 +518,13 @@ func _try_hit(target: Node) -> void:
 	var dealt_damage: int = roundi(float(equipped_sword.base_damage) * damage_multiplier)
 	var final_damage: int = dealt_damage
 	var is_back_hit: bool = false
+	var killed: bool = false
 	if enemy_root.has_method("take_dash_hit"):
 		var result: Variant = enemy_root.take_dash_hit(dealt_damage, _dash_direction)
 		if result is Dictionary:
 			final_damage = int(result.get("final_damage", dealt_damage))
 			is_back_hit = bool(result.get("is_back_hit", false))
+			killed = bool(result.get("killed", false))
 	hit_landed.emit(enemy_root, final_damage, hit_position, _dash_direction, is_back_hit)
 	# Element-color flash for procced slashes. Tints the enemy root; the
 	# dummy's own visual.modulate white flash multiplies on top.
@@ -520,6 +533,11 @@ func _try_hit(target: Node) -> void:
 	# Per-element per-contact effects, dispatched off ctx tags.
 	if _current_slash_ctx != null and is_instance_valid(enemy_root):
 		_apply_element_effects(enemy_root, dealt_damage)
+	# Amulet gem on_kill — fires only on the contact that actually dropped the
+	# target. Enemy root may already be queue_free'd; we pass it anyway since
+	# on_kill hooks only need identity.
+	if killed and equipped_amulet_gem != null:
+		equipped_amulet_gem.on_kill(self, enemy_root)
 
 # ===== Gem dispatchers =====
 

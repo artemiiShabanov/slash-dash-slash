@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://di1jjoeakpifk"]
+[gd_scene load_steps=11 format=3 uid="uid://di1jjoeakpifk"]
 
 [ext_resource type="Script" uid="uid://c1s7cnsv4scd5" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Resource" uid="uid://bgqmkn601ssci" path="res://resources/dash_tuning.tres" id="2_tuning"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://pjxd7pd022yv" path="res://resources/equipment/swords/executive_katana.tres" id="4_tuyoq"]
 [ext_resource type="Resource" uid="uid://b1hittunbas3" path="res://resources/hit_tuning.tres" id="5_htune"]
 [ext_resource type="Resource" uid="uid://b1idlanyard" path="res://resources/equipment/amulets/id_lanyard.tres" id="7_amulet"]
+[ext_resource type="Resource" uid="uid://b1jankey001" path="res://resources/gems/amulets/janitors_master_key.tres" id="7_smehm"]
 [ext_resource type="Resource" uid="uid://b1wgtune001" path="res://resources/weapon_gem_tuning.tres" id="10_gtune"]
 
 [sub_resource type="CircleShape2D" id="cs_player"]
@@ -23,6 +24,7 @@ gem_tuning = ExtResource("10_gtune")
 equipped_sword = ExtResource("4_tuyoq")
 equipped_amulet = ExtResource("7_amulet")
 debug_loadout = Array[int]([0, 1, 2, 3, 4, 5])
+equipped_amulet_gem = ExtResource("7_smehm")
 
 [node name="Body" type="Polygon2D" parent="."]
 color = Color(0.96, 0.97, 0.92, 1)

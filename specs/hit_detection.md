@@ -1,6 +1,6 @@
 # hit-detection
 
-**Status:** Synced 2026-05-16 (weapon-gem-roster)
+**Status:** Synced 2026-05-16 (amulet-gem-roster)
 
 ## Goal
 
@@ -22,7 +22,7 @@ Make a slashing dash deal damage to every enemy along its path. One slash = one 
 - Tunables — `res://resources/hit_tuning.tres` (`class_name HitTuning`):
   - `hit_radius_offset: float` — added to body radius for forgiveness margin (default 2.0).
 - Per-slash damage is sourced from `equipped_sword.base_damage` (see `equipment-resource-schema`), then multiplied by `_current_slash_ctx.damage_multiplier` (see `weapon-gem-crit-proc`) before reaching `take_dash_hit`. Not sourced from this resource.
-- Enemy interface (duck-typed): `take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary`. Returns `{"final_damage": int, "is_back_hit": bool}` so the player can populate `hit_landed` without recomputing side or armor math. Any node with this method participates. Armor logic lives inside the enemy (the `armor-direction` spec extends this); vulnerability multiplication lives there too (the `weapon-gem-roster` spec adds it).
+- Enemy interface (duck-typed): `take_dash_hit(damage: int, dash_direction: Vector2) -> Dictionary`. Returns `{"final_damage": int, "is_back_hit": bool, "killed": bool}` so the player can populate `hit_landed` and dispatch amulet `on_kill` without inspecting the freed enemy. `killed` added by `amulet-gem-roster`. Any node with this method participates. Armor logic lives inside the enemy (the `armor-direction` spec extends this); vulnerability multiplication lives there too (`weapon-gem-roster`).
 - The player walks up from the contact area via `area.get_parent()` to find the enemy root (because enemies are `CharacterBody2D` with a child `Hurtbox: Area2D` since `basic-enemy-ai`). The group check (`"enemy"`) runs on the parent.
 - Dummy enemy: `scenes/dummy_enemy.tscn` + `scripts/dummy_enemy.gd` — placeholder for M3 smoke test only; replaced by real enemies in M4.
   - Health (default 3), `take_dash_hit` subtracts damage, flashes modulate white briefly, `queue_free` at ≤ 0.

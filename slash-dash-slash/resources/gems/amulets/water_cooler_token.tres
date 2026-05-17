@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="VampiricAmuletGem" load_steps=2 format=3 uid="uid://b1wcoolertkn"]
+
+[ext_resource type="Script" path="res://scripts/gems/amulets/vampiric_amulet_gem.gd" id="1_vamp"]
+
+[resource]
+script = ExtResource("1_vamp")
+display_name = "Water Cooler Token"
+description = "Sip from every fallen request. Closing a ticket tops you up."
+heal_per_kill = 1
