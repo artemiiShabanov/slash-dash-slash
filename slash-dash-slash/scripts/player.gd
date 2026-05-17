@@ -536,11 +536,12 @@ func _on_weapon_fired_for_gems(_direction: Vector2) -> void:
 			continue
 		if randf() < Element.base_chance(gem.element):
 			ctx.procced_gems.append(gem)
-	# Single proc → on_proc; 2+ → on_combo on each (suppresses on_proc).
+	# Every procced gem fires on_proc; if 2+, each also fires on_combo on top
+	# so combo content stacks with solo effects (not replaces).
 	var proc_count: int = ctx.procced_gems.size()
-	if proc_count == 1:
-		ctx.procced_gems[0].on_proc(self, ctx)
-	elif proc_count >= 2:
+	for i in proc_count:
+		ctx.procced_gems[i].on_proc(self, ctx)
+	if proc_count >= 2:
 		for i in proc_count:
 			var gem: WeaponGem = ctx.procced_gems[i]
 			var partners: Array = []

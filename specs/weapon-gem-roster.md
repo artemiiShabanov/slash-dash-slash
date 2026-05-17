@@ -1,6 +1,6 @@
 # weapon-gem-roster
 
-**Status:** Shipped
+**Status:** Shipped (combo-stacks revision 2026-05-16)
 
 ## Goal
 
@@ -15,7 +15,7 @@ Implement real per-element on_proc effects for the six existing `Element.Kind` v
 - **WIND** proc: slash hit-radius gains a multiplicative bonus (even fatter than water), and every enemy struck is shoved along the dash direction.
 - **METAL** proc: no special body — just the base per-element damage multiplier (highest of the six, per `Element.base_damage_multiplier`).
 - **LIGHTNING** proc: every enemy struck gains a stun — total stop (no movement, no attack windup) for a duration. Stuns stack as parallel instances; while any is active the enemy is stunned.
-- Player.tscn loadout is wired by a `debug_loadout: Array[int]` of element ints, resolved to gem instances in `_ready` via the factory. The default demo carries all six elements (slot cap unenforced for now — debug loadout). Combos blend colors as before; combo path stays content-deferred.
+- Player.tscn loadout is wired by a `debug_loadout: Array[int]` of element ints, resolved to gem instances in `_ready` via the factory. The default demo carries all six elements (slot cap unenforced for now — debug loadout). Combos blend colors; combo content is deferred but combo slashes already stack every procced gem's solo effects (per the updated `weapon-gem-crit-proc` rule — combo *adds*, doesn't replace).
 
 ## Data
 
@@ -92,7 +92,7 @@ Per-element flavor strings (filled into `Element.display_name` / `Element.descri
 
 ## Edge cases & out-of-scope
 
-- Combo (2+ procs) suppresses every per-element on_proc body and per-contact tag handling. By design — combo content is `gem-combo-content`'s problem.
+- Combo (2+ procs) now stacks every procced gem's `on_proc` effects on top of `on_combo` (combo adds, doesn't replace — per the revised `weapon-gem-crit-proc`). Per-contact tags accumulate: a FIRE+WATER combo applies both burn and vulnerability per contact. Radius bumps sum (WATER additive); WIND multiplier overwrites rather than multiplies if both fire (acceptable; the latter wins).
 - Vulnerability does NOT apply to the slash that procced it (water's on_proc fires before contacts, but the vuln instance is created *during* contact handling, i.e., after `take_dash_hit` already returned — see ordering above). Vulnerability does apply to any further contacts of the same slash on the SAME enemy if it were possible — but `_hit_this_dash` prevents double-tap, so in practice it kicks in next slash. Acceptable.
 - Burn killing an enemy outside a slash: standard `queue_free` path; no `hit_landed` (signal is dash-scoped).
 - Slow stack > 95%: capped (never reaches 100% — that's stun's job).

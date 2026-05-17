@@ -1,6 +1,6 @@
 # weapon-gem-crit-proc
 
-**Status:** Synced 2026-05-16 (weapon-gem-roster)
+**Status:** Synced 2026-05-16 (weapon-gem-roster; combo-stacks revision)
 
 ## Goal
 
@@ -9,8 +9,8 @@ Make equipped weapon gems actually do something: each slash rolls per-gem proc c
 ## Player-facing behavior
 
 - Each slash dash rolls every equipped weapon gem once at fire time. A procced gem amplifies *the entire slash*, not a single contact.
-- A single-gem proc amplifies the slash via that gem's `on_proc` (default: per-element damage multiplier).
-- A multi-gem proc (2+) **suppresses the individual `on_proc` effects** and instead routes amplification through `on_combo`. Single-element bonuses don't stack with their own combo — combos *replace* the solo procs that would have fired.
+- Every procced gem fires its `on_proc` (default: per-element damage multiplier + tag + per-element ctx writes).
+- A multi-gem proc (2+) **additionally** fires `on_combo` on each procced gem — combo content stacks on top of the solo effects rather than replacing them. (Earlier drafts had combos replace solo procs; reverted because the suppression felt punishing once per-element specials existed.)
 - Each enemy struck during an affected slash briefly flashes in the gem's element color instead of plain white. Combo flashes blend the colors of all procced gems.
 - Slashes that hit nothing still roll — the proc is just "wasted." Reposition dashes (sword unloaded) roll nothing.
 - No SFX yet, no per-element specials, no combo content. The hooks fire; what they do beyond damage/flash is a later spec's problem.
@@ -33,13 +33,13 @@ Make equipped weapon gems actually do something: each slash rolls per-gem proc c
 - Per-element tunables (added by `weapon-gem-roster`): `fire_burn_duration` / `fire_burn_tick_interval` / `fire_burn_damage_mult`, `water_radius_bonus` / `water_vulnerability_mult` / `water_vulnerability_duration`, `ice_slow_pct` / `ice_slow_duration`, `wind_radius_mult` / `wind_knockback_distance`, `lightning_stun_duration`.
 
 `WeaponGem` hook signature drift (on `gem-resource-schema`):
-- `on_proc(player: Node, ctx: SlashContext) -> void` — replaces the prior `(player, target, dash_direction)` shape. Fires once per slash, only when **exactly one** gem procced this slash, before any contact. Default body: `ctx.damage_multiplier *= Element.base_damage_multiplier(element)` and `ctx.tags.append(StringName(Element.kind_name(element) + "_proc"))` (since `weapon-gem-roster` — `kind_name` replaced the original `display_name(...).to_lower()` build), plus per-element ctx writes (WATER/WIND adjust radius fields). Per-element per-contact effects (burn, vuln, slow, knockback, stun) are dispatched by `Player._try_hit` reading tags.
-- `on_combo(player: Node, partner_gems: Array[WeaponGem], ctx: SlashContext) -> void` — gains `ctx`. Fires once per slash on each procced gem when **2+** gems procced (instead of `on_proc`). Default body: no-op — combo content is deferred to `gem-combo-content`. A 2+ proc slash currently deals plain base damage; only the element-blend flash distinguishes it.
+- `on_proc(player: Node, ctx: SlashContext) -> void` — replaces the prior `(player, target, dash_direction)` shape. Fires once per slash on **every** procced gem, before any contact. Default body: `ctx.damage_multiplier *= Element.base_damage_multiplier(element)` and `ctx.tags.append(StringName(Element.kind_name(element) + "_proc"))` (since `weapon-gem-roster` — `kind_name` replaced the original `display_name(...).to_lower()` build), plus per-element ctx writes (WATER/WIND adjust radius fields). Per-element per-contact effects (burn, vuln, slow, knockback, stun) are dispatched by `Player._try_hit` reading tags.
+- `on_combo(player: Node, partner_gems: Array[WeaponGem], ctx: SlashContext) -> void` — gains `ctx`. Fires once per slash on each procced gem when **2+** gems procced, **in addition to** `on_proc` (not instead). Default body: no-op — combo content is deferred to `gem-combo-content`. Today a 2+ proc slash already stacks every procced gem's solo effects (multipliers compound, radius bumps sum, all tags fire); combo content will land on top of that.
 - `on_slash` and `on_kill` unchanged.
 
 `Player` (`scripts/player.gd`) drift:
 - `_current_slash_ctx: SlashContext` — built on `weapon_fired`, cleared on `dash_ended`. Null when no slash is in flight.
-- `weapon_fired` handler now: builds a fresh `SlashContext`; iterates `equipped_weapon_gems`; for each non-null gem rolls `randf() < Element.base_chance(gem.element)`; on success, appends to `ctx.procced_gems`. **After** the roll loop: if exactly 1 procced, call `on_proc(self, ctx)` on it. If 2+ procced, call `on_combo(self, partners_excluding_self, ctx)` on each — `on_proc` is **not** called in this case. Then set `ctx.flash_color` to that one element's color (single) or the mean of all procced element colors (combo).
+- `weapon_fired` handler now: builds a fresh `SlashContext`; iterates `equipped_weapon_gems`; for each non-null gem rolls `randf() < Element.base_chance(gem.element)`; on success, appends to `ctx.procced_gems`. **After** the roll loop: call `on_proc(self, ctx)` on every procced gem. If 2+ procced, also call `on_combo(self, partners_excluding_self, ctx)` on each — combo runs *in addition to* on_proc, stacking. Then set `ctx.flash_color` to that one element's color (single) or the mean of all procced element colors (combo).
 - `_dispatch_gems_on_slash` (per-contact, from `gem-resource-schema`) keeps calling `on_slash` for every gem; no change there.
 - Per-contact damage: `dealt_damage = roundi(equipped_sword.base_damage * _current_slash_ctx.damage_multiplier)` — passed into `target.take_dash_hit(...)`. (Enemy may further multiply by its own vulnerability stacks before returning `final_damage`; see `hit_detection`.)
 - HitArea radius at `weapon_fired` (since `weapon-gem-roster`): `(body_radius + hit_tuning.hit_radius_offset + ctx.extra_hit_radius) * ctx.hit_radius_multiplier`. Baseline restored on `dash_ended`.
@@ -48,7 +48,7 @@ Make equipped weapon gems actually do something: each slash rolls per-gem proc c
 ## Edge cases & out-of-scope
 
 - Slash hits nothing: roll still happens, hooks still fire, nothing applies. `on_proc` / `on_combo` fire even with zero contacts — gives reactive amulets/visuals a chance to respond.
-- 2+ procs with combo content unimplemented: slash deals base damage (no multiplier). This is intentional — the combo gates its own damage and `gem-combo-content` will fill it in. Don't add a fallback "single proc still applies" path; combos *replace* solo procs by design.
+- 2+ procs with combo content unimplemented: slash stacks all procced gems' solo effects (multipliers compound; e.g. FIRE+METAL = 2.5 × 3.0 = 7.5×). When `gem-combo-content` lands, its per-pair payload adds on top.
 - Reposition dash: `weapon_fired` never fires, so no roll, no ctx, no procs.
 - Same gem appearing twice in `equipped_weapon_gems`: rolls independently per slot; both can proc and both count toward combo size.
 - Null entry in `equipped_weapon_gems`: dispatcher skips (already true from `gem-resource-schema`).
