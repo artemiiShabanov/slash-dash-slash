@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WaterCoolerInteraction" load_steps=3 format=3 uid="uid://b1ohydrastn01"]
+
+[ext_resource type="Script" path="res://scripts/interaction/interactions/water_cooler_interaction.gd" id="1_wcint"]
+[ext_resource type="PackedScene" uid="uid://b1healpick01" path="res://scenes/interaction/heal_pickup.tscn" id="2_hpsc"]
+
+[resource]
+script = ExtResource("1_wcint")
+stops_dash = false
+heal_pickup_scene = ExtResource("2_hpsc")
+drop_count = 3
+scatter_radius = 14.0
+depleted_color = Color(0.4, 0.45, 0.55, 1.0)

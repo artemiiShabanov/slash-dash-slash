@@ -1,6 +1,6 @@
 # wall-collision-dash
 
-**Status:** Shipped
+**Status:** Synced 2026-05-18 (interaction-system)
 
 ## Goal
 
@@ -16,15 +16,16 @@ A dash that hits a wall stops dead at the contact point and ends immediately, so
 
 ## Data
 
-- Signal: `wall_hit(position: Vector2, normal: Vector2)` — emitted on the player at the moment a dash is interrupted by a wall. Fires before `dash_ended`.
+- Signal: `wall_hit(position: Vector2, normal: Vector2)` — emitted on the player at the moment a dash is interrupted. Fires before `dash_ended`. Original source is physical wall collision (this spec); `interaction-system` reuses the same signal for interactables with `stops_dash = true`, emitting with `Vector2.ZERO` normal at current position. Consumers (SFX wall clang) fire on both.
 - No new tunables. No new resources.
-- Implementation: `_advance_dash()` reads the `KinematicCollision2D` returned by `move_and_collide` and triggers an early end when non-null.
+- Implementation: `_advance_dash()` reads the `KinematicCollision2D` returned by `move_and_collide` and triggers an early end when non-null. Interactable-triggered termination follows the same `wall_hit` → `_end_dash()` sequence from outside `_advance_dash`.
 
 ## Edge cases & out-of-scope
 
 - Zero-length step that still reports a collision (immediate flush wall): treated as a wall hit at current position; dash ends with traveled = `Vector2.ZERO`.
 - Multiple collisions in a single physics frame: the first one wins; subsequent ones ignored.
 - Wall encountered exactly on the final step: dash ends one frame earlier than time-up; not a problem.
+- Per-source termination event: `wall_hit` currently mixes wall-collision and interactable termination. Acceptable until a downstream consumer needs to distinguish them.
 - Out of scope: hit-stop, screen shake, sound, particles, damage on wall hit, slide-along behavior, bounce behavior, "magnetism" near wall edges.
 
 ## Tasks

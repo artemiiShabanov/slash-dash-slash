@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="InteractionTuning" load_steps=2 format=3 uid="uid://b1intetune01"]
+
+[ext_resource type="Script" uid="uid://cb7pvax3ytmvo" path="res://scripts/resources/interaction_tuning.gd" id="1_inttune"]
+
+[resource]
+script = ExtResource("1_inttune")
+attract_radius = 60.0
+lerp_factor = 8.0
+seek_delay = 0.1
+scatter_friction = 4.0

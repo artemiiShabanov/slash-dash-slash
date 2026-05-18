@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://dh7g6fuaexaj1"]
+[gd_scene load_steps=8 format=3 uid="uid://dh7g6fuaexaj1"]
 
 [ext_resource type="PackedScene" uid="uid://di1jjoeakpifk" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://cq54ixyk4iy5a" path="res://scripts/input_feedback_overlay.gd" id="2_overlay"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://cgecqith5888d" path="res://resources/equipment/amulets/field_managers_belt.tres" id="3_hcsba"]
 [ext_resource type="Resource" path="res://resources/tank_dummy_stats.tres" id="4_tank"]
 [ext_resource type="Script" uid="uid://5uayr0felsci" path="res://scripts/debug/damage_number_spawner.gd" id="5_spawn"]
+[ext_resource type="PackedScene" uid="uid://b1watercool01" path="res://scenes/interactables/water_cooler.tscn" id="6_cooler"]
 
 [node name="M3CombatDemo" type="Node2D"]
 
@@ -85,6 +86,9 @@ equipped_amulet = ExtResource("3_hcsba")
 
 [node name="DamageNumberSpawner" type="Node2D" parent="."]
 script = ExtResource("5_spawn")
+
+[node name="WaterCooler" parent="." instance=ExtResource("6_cooler")]
+position = Vector2(60, 0)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 

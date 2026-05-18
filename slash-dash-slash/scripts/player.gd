@@ -149,6 +149,7 @@ var _duration_mods: Dictionary = {}
 @onready var body: Polygon2D = $Body
 @onready var hit_area: Area2D = $HitArea
 @onready var hit_area_shape: CollisionShape2D = $HitArea/HitAreaShape
+@onready var interact_area: Area2D = $InteractArea
 
 # Held reference so a new dash can kill an in-flight fade. Without this, the
 # fade tween would overwrite the new dash's freshly-reset alpha and clear its
@@ -261,6 +262,10 @@ func _ready() -> void:
 	# Audio: hand ourselves to the autoload so it can subscribe to all our
 	# combat signals without us knowing what it plays.
 	Audio.bind_to_player(self)
+
+	# Interaction system (per `interaction-system` spec). Player's InteractArea
+	# masks INTERACTABLE_LAYER; we gate firing on `is_dashing` per pillar 1.
+	interact_area.area_entered.connect(_on_interact_area_entered)
 
 func _physics_process(delta: float) -> void:
 	# Push player position so InputSystem can compute mouse-relative aim.
@@ -450,6 +455,27 @@ func _on_player_died() -> void:
 	InputSystem.dash_in_progress = false
 
 # ===== Hit detection =====
+
+# ===== Interaction =====
+
+func _on_interact_area_entered(area: Area2D) -> void:
+	# Pillar 1: dash is the verb. Idle overlaps don't fire interactions.
+	if not is_dashing:
+		return
+	if area == null or not is_instance_valid(area):
+		return
+	# The Interactable script sits on the Area2D root itself (not a child).
+	var interactable: Node = area
+	if not "interaction" in interactable or interactable.interaction == null:
+		return
+	if "consumed" in interactable and interactable.consumed:
+		return
+	interactable.interaction.on_dash_into(self, interactable)
+	if interactable.interaction.stops_dash:
+		# Reuse the wall_hit termination path so SFX / dash_ended consumers
+		# fire uniformly. Normal is zero — no contact direction info.
+		wall_hit.emit(global_position, Vector2.ZERO)
+		_end_dash()
 
 func _apply_hit_radius() -> void:
 	# Baseline radius (no proc): body + tuning offset, multiplier 1.0.

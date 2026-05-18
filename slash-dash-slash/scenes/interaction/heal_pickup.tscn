@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1healpick01"]
+
+[ext_resource type="Script" path="res://scripts/interaction/pickups/heal_pickup.gd" id="1_heal"]
+[ext_resource type="Resource" uid="uid://b1intetune01" path="res://resources/interaction_tuning.tres" id="2_tune"]
+
+[sub_resource type="CircleShape2D" id="cs_pickup"]
+radius = 3.0
+
+[node name="HealPickup" type="Area2D"]
+collision_layer = 32
+collision_mask = 8
+script = ExtResource("1_heal")
+tuning = ExtResource("2_tune")
+heal_amount = 1
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.40, 0.95, 0.50, 1)
+polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("cs_pickup")

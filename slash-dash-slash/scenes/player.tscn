@@ -49,4 +49,12 @@ monitorable = false
 [node name="HitAreaShape" type="CollisionShape2D" parent="HitArea"]
 shape = SubResource("cs_hitarea")
 
+[node name="InteractArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 16
+monitorable = false
+
+[node name="InteractAreaShape" type="CollisionShape2D" parent="InteractArea"]
+shape = SubResource("cs_player")
+
 [node name="StaminaPips" parent="." instance=ExtResource("4_pips")]
