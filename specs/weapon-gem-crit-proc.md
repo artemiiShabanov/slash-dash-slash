@@ -60,7 +60,7 @@ Make equipped weapon gems actually do something: each slash rolls per-gem proc c
 - [x] Create `scripts/gems/slash_context.gd` (`class_name SlashContext extends RefCounted`) with the fields above.
 - [x] Add `Element.color(kind)` static helper with six placeholder colors; mark tunable.
 - [x] Create `scripts/resources/weapon_gem_tuning.gd` + `resources/weapon_gem_tuning.tres` with `proc_flash_duration = 0.12`.
-- [x] Update `WeaponGem.on_proc` signature to `(player, ctx)` with the default body (multiplier + tag). Update `on_combo` to take `ctx`. Update `LogWeaponGem` overrides to match the new signatures (still print).
+- [x] Update `WeaponGem.on_proc` signature to `(player, ctx)` with the default body (multiplier + tag). Update `on_combo` to take `ctx`. (LogWeaponGem retired by `weapon-gem-roster`; the override-rewrite step is moot.)
 - [x] Player: add `_current_slash_ctx`; on `weapon_fired` build ctx, roll each gem, fire `on_proc` for procced, fire `on_combo` if 2+. Set `flash_color` post-roll. Clear ctx on `dash_ended`.
 - [x] Player: in the per-contact path, multiply `equipped_sword.base_damage` by `ctx.damage_multiplier` before `take_dash_hit`. After the call, if any proc occurred, tween `target.modulate` to `ctx.flash_color` for `proc_flash_duration` then back.
-- [x] Smoke-test in `m3_combat_demo`: equip two `log_weapon_gem.tres` (different elements) on the player; dash through dummies — console shows roll results per slash; on procced slashes dummies flash in element color; on combo slashes log shows combo hook with both partners; damage visibly higher (raise sword base_damage temporarily if needed to see HP delta).
+- [x] Smoke-test in `m3_combat_demo`: originally with two `log_weapon_gem.tres` instances; now exercised via `weapon-gem-roster`'s real elemental gems through `player.tscn:debug_loadout`. Procced slashes flash in element color, combo slashes blend colors, damage visibly higher per the proc multiplier.

@@ -474,8 +474,13 @@ func _on_interact_area_entered(area: Area2D) -> void:
 	if interactable.interaction.stops_dash:
 		# Reuse the wall_hit termination path so SFX / dash_ended consumers
 		# fire uniformly. Normal is zero — no contact direction info.
+		# Defer the termination: this callback runs inside Godot's physics
+		# query flush; _end_dash → dash_ended → _on_dash_ended_for_hit toggles
+		# `hit_area.monitoring`, which Godot forbids during flush. Emitting the
+		# signal stays synchronous (signals are flush-safe); only the physics
+		# state change is deferred.
 		wall_hit.emit(global_position, Vector2.ZERO)
-		_end_dash()
+		call_deferred("_end_dash")
 
 func _apply_hit_radius() -> void:
 	# Baseline radius (no proc): body + tuning offset, multiplier 1.0.

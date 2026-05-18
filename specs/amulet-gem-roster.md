@@ -44,7 +44,7 @@ Resource files (new):
 
 ## Edge cases & out-of-scope
 
-- Vampiric heal popup: there's no `healed` signal today. Emitting `damaged(-heal_per_kill, null)` is a hack the HUD doesn't currently consume; cleaner path is a follow-up `healed` signal — left noted, not blocking. UI consumes nothing yet.
+- Vampiric heal popup: there's no `healed` signal today. Emitting `damaged(-heal_per_kill, null)` is the placeholder hook; the debug `damage_number_spawner` reads negative `damaged` amounts and renders them as green popups at the player. Cleaner path is a follow-up `healed` signal — left noted, not blocking.
 - Wall-pass + sword loading: dashes still consume stamina + reload weapon normally; only collision changes. Reposition dashes phase too.
 - Wall-pass restoration: if no hot-swap path runs (current code), `on_unequip` is dead code. Acceptable until selection UI gains a swap mid-run.
 - Thorns reflecting off armor: zero `dash_direction` makes the dummy compute a front hit (full front armor); on a 0.9 armor enemy, 1 damage thorns rounds to 0. Accepted; tune armor or `thorns_damage` per encounter.

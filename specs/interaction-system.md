@@ -55,7 +55,7 @@ Ships the framework + one concrete interactable (water cooler → heal pickups).
 - `on_dash_into`: if `interactable.consumed` → return. Set `consumed = true`. Spawn `drop_count` HealPickup instances at `interactable.global_position + (random unit vector × scatter_radius)`. Tint the interactable's visual modulate to a `depleted_color` (read from the cooler scene's exported field) to signal spent state.
 
 `Player` (`scripts/player.gd`) drift:
-- New `@onready var interact_area: Area2D = $InteractArea` (added to player.tscn — `collision_layer = 0`, `collision_mask = 16`, `monitoring = true`).
+- New `@onready var interact_area: Area2D = $InteractArea` (added to player.tscn — `collision_layer = 0`, `collision_mask = 16`; `monitoring` is left at Area2D's default of `true`).
 - `interact_area.area_entered.connect(_on_interact_area_entered)`.
 - `_on_interact_area_entered(area: Area2D)`: only fires while `is_dashing`; walks to `area.get_parent()` (the Interactable root); guards on `consumed` and presence of `interaction`; calls `interaction.on_dash_into(self, root)`. If `interaction.stops_dash`, calls the existing wall-hit termination path so the dash ends at current position and emits `wall_hit`.
 

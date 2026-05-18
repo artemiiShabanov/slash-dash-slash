@@ -130,6 +130,11 @@ func _physics_process(delta: float) -> void:
 		# Fire when the windup completes while still in range.
 		if _is_winding_up and _windup_remaining <= 0.0:
 			_do_attack()
+			# Reentrancy guard: thorns / future reactive amulets can fatally
+			# damage us inside _do_attack via the player's on_player_damaged.
+			# Bail before mutating cooldown on a queue_freed instance.
+			if not is_instance_valid(self):
+				return
 			_is_winding_up = false
 			_cooldown_remaining = 1.0 / maxf(0.01, stats.attack_speed)
 

@@ -72,8 +72,8 @@ Player (`scripts/player.gd`):
 - [x] Create `scripts/gems/element.gd` with `class_name Element`, `enum Kind { FIRE, WATER, ICE, WIND, METAL, LIGHTNING }`, and `static` helpers: `display_name(kind)`, `base_chance(kind)`, `base_damage_multiplier(kind)`. Placeholder per-element values within the chance/multiplier ranges; tunable.
 - [x] Create `scripts/gems/weapon_gem.gd` (`class_name WeaponGem extends Resource`) with `element: int` (Element.Kind) + four hook methods (empty bodies). No per-gem numeric fields — bases come from `Element.*`.
 - [x] Create `scripts/gems/amulet_gem.gd` (`class_name AmuletGem extends Resource`) with the field list + five virtual hooks (empty bodies).
-- [x] Create `scripts/gems/log_weapon_gem.gd` (`class_name LogWeaponGem extends WeaponGem`) overriding all four hooks with `print` calls.
-- [x] Create `resources/gems/log_weapon_gem.tres` (single instance).
+- [x] ~~Create `scripts/gems/log_weapon_gem.gd`~~ — *retired by `weapon-gem-roster`; real elemental gems drive the dispatcher.*
+- [x] ~~Create `resources/gems/log_weapon_gem.tres`~~ — *retired with the LogWeaponGem class.*
 - [x] Extend `RunState` (`scripts/run_state.gd`): add `equipped_weapon_gems: Array[WeaponGem]` and `equipped_amulet_gem: AmuletGem`; clear both in `reset()`.
 - [x] Extend `Player`: `@export` fallbacks, _ready resolves RunState→export ladder, connect `hit_landed` to a `_dispatch_gems_on_slash` helper that iterates and calls `on_slash`.
-- [x] Smoke-test: log_weapon_gem.tres assigned to player.tscn's `equipped_weapon_gems` array. Run the project, pick equipment, slash a dummy — console shows `[LogWeaponGem:Fire] on_slash target=DummyX dir=(...)` on every contact during slash dashes.
+- [x] Smoke-test: log_weapon_gem.tres assigned to player.tscn's `equipped_weapon_gems` array. *Original verification; superseded by `weapon-gem-roster` smoke test against real elemental gems.*

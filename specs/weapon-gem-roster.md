@@ -55,7 +55,7 @@ Damage flow inside `take_dash_hit` (drift on `hit_detection` + `armor_direction`
 
 `DummyEnemy` (`scripts/dummy_enemy.gd`) gains the duck-typed enemy interface methods used above plus their state. All instance arrays are pruned in `_physics_process` as timers reach 0.
 - Status state (private fields):
-  - `_burns: Array` of `{ damage_per_tick: float, tick_interval: float, time_to_next_tick: float, time_remaining: float }`
+  - `_burns: Array` of `{ damage_per_tick: float, tick_interval: float, time_to_next_tick: float, time_remaining: float, residual: float }`
   - `_slows: Array` of `{ slow_pct: float, time_remaining: float }`
   - `_stuns: Array` of `{ time_remaining: float }`
   - `_vulns: Array` of `{ damage_mult: float, time_remaining: float }`
