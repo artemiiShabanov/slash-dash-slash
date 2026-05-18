@@ -6,44 +6,11 @@ Conventions:
 - Each milestone lists its specs and the **question** it answers (does this *feel* right? does the loop close? etc.).
 - Content specs (rosters) often appear *initially* in an early milestone with a tiny set, then *fully* in a later expansion milestone.
 - A milestone is "done" when its question can be answered yes by playing the build, not when its specs are merged.
+- Numbering is preserved across deletions so cross-references stay stable.
+
+**Completed:** M1 Foundations · M2 Dash skeleton · M3 Combat verb · M4 First enemy AI · M5 Equipment basics · M6 First gem · M8 Amulet gems · M10 (interaction-system half). See git history + `specs/` for the shipped specs.
 
 ---
-
-## M1. Foundations
-*Does input feel right across all 3 platforms?*
-- `input-system`
-- `ui-style-foundation`
-
-## M2. Dash skeleton
-*Does the dash feel good?*
-- `core-dash`
-- `wall-collision-dash`
-
-## M3. Combat verb against a dummy
-*Does the core combat philosophy work — committed dash + cooldown + stamina + directional armor?*
-- `weapon-cooldown-stamina`
-- `hit-detection`
-- `armor-direction`
-- `audio-sfx-palette` (basic version: dash, sword-loaded chime, armor-thunk vs back-splat, stamina exhausted, wall stop)
-
-## M4. First enemy AI
-*Is the engagement model correct against a real enemy?*
-- `enemy-stats-resource`
-- `enemy-ability-base`
-- `basic-enemy-ai`
-
-## M5. Equipment basics (sword + amulet)
-*Does choosing a sword + amulet at run start feel meaningful?*
-- `equipment-resource-schema`
-- `equipment-selection-ui`
-- `sword-roster` (initial: 2 swords)
-- `amulet-roster` (initial: 2 amulets)
-
-## M6. First gem (crits land)
-*Do crits feel satisfying — color, sound, and damage spike?*
-- `gem-resource-schema`
-- `weapon-gem-crit-proc`
-- `weapon-gem-roster` (initial: 2 elements)
 
 ## M7. Gem combos + mega
 *Is the combo layer compelling — does landing a 2-element proc feel like a moment?*
@@ -51,18 +18,13 @@ Conventions:
 - `gem-combo-content` (initial: a handful of combos)
 - `gem-mega-combo` (mechanic + 1 mega effect)
 
-## M8. Amulet gems (passives)
-*Do amulet gems feel mechanically distinct from weapon gems?*
-- `amulet-gem-roster` (initial: 2 amulet gems with unique passives — e.g., vampiric, wall-pass)
-
 ## M9. Arena with threat escalation
 *Is sustained combat across a ~2-minute escalation satisfying?*
 - `level-scene-base`
 - `threat-escalation`
 
-## M10. Interaction system + universal props
-*Does dash-as-interact work — water cooler heals, vending machine drops loot?*
-- `interaction-system`
+## M10. Universal props (the rest)
+*Does the prop set deliver beyond the water cooler — vending machine drops loot, filing cabinet upgrades, etc.?*
 - `universal-props`
 
 ## M11. Look generator + first speaking NPC
@@ -110,7 +72,7 @@ Conventions:
 
 ## M18. Full equipment + gem rosters
 *Does the build space feel rich — do enough swords/amulets/gems exist for varied replays?*
-- Expand `sword-roster`, `amulet-roster`, `weapon-gem-roster`, `amulet-gem-roster`, `gem-combo-content` to full intended catalog
+- Expand `sword-roster`, `amulet-roster`, `amulet-gem-roster`, `gem-combo-content` to full intended catalog. (`weapon-gem-roster` already shipped at full catalog in M6.)
 
 ## M19. Floor 1 + Manager boss
 *Does the second floor feel distinct from the first — different enemies, theme, quest, boss continuity?*
@@ -179,18 +141,17 @@ Conventions:
 
 ## Reading the build order
 
-- **M1–M3 (foundations + combat verb)** — earliest demoable build. The pillar test: does dashing and slashing feel right?
-- **M4–M8 (combat depth)** — adds enemy, equipment, gems, combos. By end of M8 the *combat identity* is testable. This is the "fun is fun" checkpoint.
-- **M9–M12 (one-room game)** — arena with escalation, props, NPCs, opening cutscene. The world starts to exist.
-- **M13–M16 (one full floor)** — Floor B as the prototype. Quests, upgrades, procgen variation. By end of M16 the *micro loop* is testable end-to-end.
-- **M17–M18 (meta foundation + content breadth)** — save state, first ending, full rosters. Replay value emerges.
-- **M19–M21 (full vertical slice)** — all four floors. By end of M21 the *macro arc* is playable.
-- **M22–M26 (full meta loop)** — unlocks, shortcuts, all endings. By end of M26 the game is *narratively complete*.
-- **M27–M28 (polish)** — audio richness, tuning, mobile validation.
+- **Through M8** (complete) — input, dash, combat verb, enemy AI, equipment + selection, weapon gems with combo dispatch, amulet gems. The combat identity exists and is testable.
+- **M7, M9–M12** — gem combos with real content, arena escalation, remaining props, NPCs + speech, opening cutscene. The world starts to exist around the combat.
+- **M13–M16** — Floor B as the prototype. Quests, upgrades, procgen variation. By end of M16 the *micro loop* is testable end-to-end.
+- **M17–M18** — save state, first ending, full rosters. Replay value emerges.
+- **M19–M21** — full vertical slice. By end of M21 the *macro arc* is playable.
+- **M22–M26** — unlocks, shortcuts, all endings. By end of M26 the game is *narratively complete*.
+- **M27–M28** — audio richness, tuning, mobile validation.
 
 ## Notes
 
 - **Spec splitting**: some specs may merge in practice (e.g., `gem-combo-proc` + `gem-combo-content` if they fit one effort). Don't be precious.
-- **Content specs are easy to defer or expand**: M5/M6/M7/M8 ship with tiny rosters; M18 expands. Don't block early milestones on content breadth.
+- **Content specs are easy to defer or expand**: M7/M8 ship with tiny rosters; M18 expands. Don't block early milestones on content breadth.
 - **Question over checklist**: a milestone is done when the demo question can be answered yes. If specs are merged but the feel is wrong, milestone isn't done.
-- **Reorder permissively**: if M9 feels needed before M5 to validate combat against waves, swap. The order here is a starting hypothesis.
+- **Reorder permissively**: if M9 feels needed before M7 to validate combat against waves, swap. The order here is a starting hypothesis.
