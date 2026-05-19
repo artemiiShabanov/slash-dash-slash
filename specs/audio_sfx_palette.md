@@ -28,7 +28,7 @@ Wire the meaty combat events to sounds — every dash, slash, hit, and wall stop
   - `master_volume_db: float` — applied to every player (default 0).
 - One `AudioStreamPlayer` child per slot under the `Audio` autoload; retriggering cuts off the previous play (acceptable for M3; polyphony is a future tweak).
 - Slash-vs-whoosh exclusivity is implemented with a one-frame flag: `_on_weapon_fired` sets `_suppress_next_dash_sound = true`; the immediately-following `_on_dash_started` consumes the flag and skips the whoosh. Player always emits `weapon_fired` before `dash_started` in `_start_dash`, so the flag's lifetime is one frame.
-- Side disambiguation comes from the `hit_landed` signal payload (`is_back_hit: bool`) — no duck-typing, no logic duplication. To enable this, two adjacent specs gain small interface changes (drift on `hit_detection` + `armor_direction`, captured at next /sync of each):
+- Side disambiguation comes from the `hit_landed` signal payload (`is_back_hit: bool`) — no duck-typing, no logic duplication. The two interface changes that enabled this now live in `combat-hit-resolution`:
   - `take_dash_hit(damage, dash_direction) -> Dictionary` (was `void`); returns `{"final_damage": int, "is_back_hit": bool}`.
   - `hit_landed(target, final_damage, position, dash_direction, is_back_hit)` — `damage` slot now carries the post-armor amount; new trailing `is_back_hit` arg.
 - Sound files live under `assets/audio/sfx/`; `README.md` lists what to drop in (Kenney / freesound / etc.).

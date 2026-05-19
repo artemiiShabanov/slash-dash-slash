@@ -59,7 +59,7 @@ Ships the framework + one concrete interactable (water cooler → heal pickups).
 - `interact_area.area_entered.connect(_on_interact_area_entered)`.
 - `_on_interact_area_entered(area: Area2D)`: only fires while `is_dashing`; walks to `area.get_parent()` (the Interactable root); guards on `consumed` and presence of `interaction`; calls `interaction.on_dash_into(self, root)`. If `interaction.stops_dash`, calls the existing wall-hit termination path so the dash ends at current position and emits `wall_hit`.
 
-`core_dash` drift:
+`dash` drift:
 - Dash can now terminate via interactable contact (`stops_dash = true`) in addition to walls / distance / stamina. Existing `wall_hit` signal is reused as the termination event for both surfaces. (Future spec may rename if other terminators land.)
 
 Scenes:

@@ -31,7 +31,7 @@ Make every dash feel intentional and platform-native: one-thumb touch, controlle
 - `current_source: InputSource` — one of `TOUCH | CONTROLLER | MOUSE_KEYBOARD | KEYBOARD`
 - `current_aim_direction: Vector2` — most recent non-zero aim from the active source; persisted across moments of zero magnitude. Used as the dash direction at commit time.
 - `buffered_dash_direction: Vector2 | null`
-- `dash_in_progress: bool` — set by gameplay code (the `core-dash` system) to indicate whether a dash is currently animating. Flipping this from `true` to `false` flushes the buffered dash by emitting `dash_requested`.
+- `dash_in_progress: bool` — set by gameplay code (the `dash` system) to indicate whether a dash is currently animating. Flipping this from `true` to `false` flushes the buffered dash by emitting `dash_requested`.
 - `player_world_position: Vector2` — set each frame by the player so the input system can compute mouse-relative aim direction.
 
 **Input tunables — `res://resources/input_system.tres` (`class_name InputTuning`):**
@@ -66,4 +66,4 @@ The two resources are owned by separate concerns: `InputTuning` for input logic,
 - [x] Mid-dash queue (single-slot, most-recent overwrite)
 - [x] Pause input on controller (Start), M+KB (Esc), and keyboard-only (Esc) — emits `pause_pressed`. Touch pause UI deferred to a future UI-pass spec.
 - [x] Visual feedback: touch swipe trail; aim-line preview for all non-touch sources (M+KB, controller, keyboard-only)
-- [x] M1 demo scene: empty room with walls; a placeholder player whose only behavior is logging `dash_requested` events so the spec is smoke-testable independent of `core-dash` being built
+- [x] M1 demo scene: empty room with walls; a placeholder player whose only behavior is logging `dash_requested` events so the spec is smoke-testable independent of `dash` being built

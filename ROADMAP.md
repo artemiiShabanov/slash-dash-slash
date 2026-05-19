@@ -72,7 +72,7 @@ Conventions:
 
 ## M18. Full equipment + gem rosters
 *Does the build space feel rich — do enough swords/amulets/gems exist for varied replays?*
-- Expand `sword-roster`, `amulet-roster`, `amulet-gem-roster`, `gem-combo-content` to full intended catalog. (`weapon-gem-roster` already shipped at full catalog in M6.)
+- Expand `equipment` (sword + amulet rosters), `gems` (amulet-gem roster), `gem-combo-content` to full intended catalog. (Weapon-gem roster already shipped at full catalog in M6.)
 
 ## M19. Floor 1 + Manager boss
 *Does the second floor feel distinct from the first — different enemies, theme, quest, boss continuity?*
