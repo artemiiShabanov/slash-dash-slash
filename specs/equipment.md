@@ -1,6 +1,6 @@
 # equipment
 
-**Status:** Shipped (consolidated 2026-05-19, supersedes `equipment-resource-schema`, `sword-roster`, `amulet-roster`)
+**Status:** Synced 2026-05-19 (hud; consolidated, supersedes `equipment-resource-schema`, `sword-roster`, `amulet-roster`)
 
 ## Goal
 
@@ -26,6 +26,7 @@ The two equipment slots the player picks at run start: sword (damage / cooldown 
 - `splash_size: float` — slash AOE radius placeholder (not yet consumed).
 - `loaded_tint_color: Color` — modulate applied to player body while loaded.
 - `special_ability: Resource` — slot for the future `SwordSpecial` hook; null today.
+- `icon: Texture2D` — optional HUD / selection card art (added by `hud`); null falls back to a procedural placeholder.
 
 `AmuletStats` (`scripts/resources/amulet_stats.gd`, `class_name AmuletStats`):
 - `display_name: String`, `description: String`.
@@ -34,6 +35,7 @@ The two equipment slots the player picks at run start: sword (damage / cooldown 
 - `shield_count: int`, `shield_regen_interval: float` — discrete hit absorbers; not yet consumed.
 - `dash_distance: float` — base pixel distance per dash before modifiers (consumed by `dash`).
 - `amulet_effect: Resource` — slot for the future `AmuletEffect` hook; null today.
+- `icon: Texture2D` — optional HUD / selection card art (added by `hud`); null falls back to a procedural placeholder.
 
 Player integration (`scripts/player.gd`):
 - `@export var equipped_sword: SwordStats`, `@export var equipped_amulet: AmuletStats`.

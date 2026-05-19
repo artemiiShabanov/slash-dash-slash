@@ -10,14 +10,8 @@ class_name HealPickup
 func _apply_payload(player_node: Node) -> void:
 	if player_node == null or not "health" in player_node:
 		return
-	var cap: int = 999
-	if "equipped_amulet" in player_node and player_node.equipped_amulet != null:
-		cap = player_node.equipped_amulet.max_health
-	var new_health: int = mini(cap, player_node.health + heal_amount)
-	if new_health == player_node.health:
-		return
-	player_node.health = new_health
-	# Placeholder heal popup signal; mirrors VampiricAmuletGem until a
-	# dedicated `healed` signal exists.
-	if player_node.has_signal("damaged"):
-		player_node.damaged.emit(-heal_amount, null)
+	# Routes through Player._set_health: single mutation point that clamps,
+	# emits health_changed for HUD, and emits damaged(prev-new) so the debug
+	# damage_number_spawner renders a heal popup.
+	if player_node.has_method("_set_health"):
+		player_node._set_health(player_node.health + heal_amount, null)

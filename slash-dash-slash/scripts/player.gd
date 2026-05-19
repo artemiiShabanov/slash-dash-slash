@@ -43,8 +43,14 @@ signal stamina_changed(current: int, max: int)
 ## of truth, no duplication. Future systems (gem procs, audio, juice) listen here.
 signal hit_landed(target: Node, final_damage: int, position: Vector2, dash_direction: Vector2, is_back_hit: bool)
 
-## Player took damage. Future UI / juice listens here.
+## Player took damage. Future UI / juice listens here. Heal sources emit this
+## with a negative `amount` so the debug damage_number_spawner renders green
+## popups; a dedicated `healed` signal is the future cleaner path.
 signal damaged(amount: int, source: Node)
+
+## Player health changed (damage, heal, or any mutation). HUD components listen.
+## `current` is the post-change value; `maximum` is the amulet HP cap.
+signal health_changed(current: int, maximum: int)
 
 ## Player health reached 0. Emitted once.
 signal died
@@ -245,6 +251,7 @@ func _ready() -> void:
 	# so by the time we get here they're listening; deferring keeps things
 	# strict-ordered if anyone connects via call_deferred themselves.
 	call_deferred("emit_signal", "stamina_changed", stamina, equipped_sword.max_stamina)
+	call_deferred("emit_signal", "health_changed", health, equipped_amulet.max_health)
 	call_deferred("emit_signal", "weapon_loaded")
 
 	# Hit-detection init.
@@ -424,13 +431,27 @@ func _apply_loaded_modulate(is_loaded: bool) -> void:
 func take_damage(amount: int, source: Node = null) -> void:
 	if _is_dead or amount <= 0:
 		return
-	health = maxi(0, health - amount)
-	damaged.emit(amount, source)
+	_set_health(health - amount, source)
 	if equipped_amulet_gem != null:
 		equipped_amulet_gem.on_player_damaged(self, amount, source)
 	_flash_damage()
 	if health <= 0:
 		_on_player_died()
+
+## Single point of mutation for `health`. Clamps to `equipped_amulet.max_health`,
+## emits `health_changed` (current, max) and `damaged(delta, source)` where
+## delta is `prev - new` (positive for damage, negative for heal). Called by
+## take_damage, VampiricAmuletGem.on_kill, HealPickup._apply_payload — anything
+## that mutates HP routes through here.
+func _set_health(value: int, source: Node = null) -> void:
+	var cap: int = equipped_amulet.max_health if equipped_amulet != null else 999
+	var clamped: int = clampi(value, 0, cap)
+	if clamped == health:
+		return
+	var prev: int = health
+	health = clamped
+	damaged.emit(prev - clamped, source)
+	health_changed.emit(health, cap)
 
 func _flash_damage() -> void:
 	if body == null:

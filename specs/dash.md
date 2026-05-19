@@ -1,6 +1,6 @@
 # dash
 
-**Status:** Shipped (consolidated 2026-05-19, supersedes `core-dash`, `wall-collision-dash`, `weapon-cooldown-stamina`)
+**Status:** Synced 2026-05-19 (hud; consolidated, supersedes `core-dash`, `wall-collision-dash`, `weapon-cooldown-stamina`)
 
 ## Goal
 
@@ -28,10 +28,14 @@ Signals (player):
 - `weapon_fired(direction: Vector2)` — emitted in `_start_dash` when the sword is loaded; `combat-hit-resolution` + `gems` proc roll listen.
 - `weapon_loaded()` / `weapon_unloaded()` — sword state transitions.
 - `stamina_changed(current: int, max: int)` — emitted on any stamina change; pips UI listens.
+- `damaged(amount: int, source: Node)` — emitted whenever the player's HP changes (positive for damage, negative for heal). `source` is the attacker node when applicable, else null.
+- `health_changed(current: int, max: int)` (added by `hud`) — emitted on every health mutation; heart-pip UI listens. Initial emit deferred from `_ready`.
+- `died` — emitted once when health reaches 0.
 
 State (player):
 - `is_dashing: bool` + elapsed-time accumulator (DASHING ↔ IDLE).
 - `is_weapon_loaded: bool`, `stamina: int`, `_cooldown_remaining: float`, `_regen_accumulator: float`.
+- `health: int` — runtime HP (init from `equipped_amulet.max_health`). Single mutation point: `_set_health(value: int, source: Node = null)` clamps to `[0, max_health]`, sets `health`, emits `health_changed(current, max)` and `damaged(prev - new, source)`. `take_damage(amount, source)`, VampiricAmuletGem, and HealPickup all route through this.
 
 Tunables — `res://resources/dash_tuning.tres` (`class_name DashTuning`):
 - `base_dash_duration: float` — seconds; default ~0.12.

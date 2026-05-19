@@ -9,6 +9,10 @@ extends Resource
 @export var display_name: String = ""
 @export var description: String = ""
 
+## Optional icon for HUD / selection card display. Null falls back to a
+## procedural placeholder (palette color + first letter of display_name).
+@export var icon: Texture2D
+
 # ===== Hooks (override in concrete gems; default no-op) =====
 
 ## Run start / equip moment. Install passive modifiers here.

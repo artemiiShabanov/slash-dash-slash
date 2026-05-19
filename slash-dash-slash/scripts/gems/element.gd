@@ -77,6 +77,16 @@ static func base_damage_multiplier(kind: int) -> float:
 		Kind.LIGHTNING: return 2.5
 	return 1.0
 
+## Per-element HUD icon. Looks for a PNG at `assets/icons/elements/<kind>.png`
+## (e.g., `fire.png`). Returns null when no asset exists; HUD falls back to
+## a procedural placeholder (color + first letter of display_name). Centralizes
+## the icon lookup so the art pass is just dropping files in one folder.
+static func icon(kind: int) -> Texture2D:
+	var path: String = "res://assets/icons/elements/%s.png" % kind_name(kind)
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
 ## Per-element tint used for the proc flash on struck enemies. Placeholder
 ## palette; tunable. Real visual treatment will graduate to a palette resource
 ## once `audio_sfx_palette` and a visuals spec mature.

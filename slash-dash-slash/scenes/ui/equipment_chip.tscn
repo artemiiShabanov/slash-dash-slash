@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1hudechip01"]
+
+[ext_resource type="Script" path="res://scripts/ui/equipment_chip.gd" id="1_echip"]
+[ext_resource type="Resource" uid="uid://b1hudtune001" path="res://resources/hud_tuning.tres" id="2_hudtune"]
+
+[node name="EquipmentChip" type="CanvasLayer"]
+script = ExtResource("1_echip")
+tuning = ExtResource("2_hudtune")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 6.0
+offset_top = 6.0
+
+[node name="Row" type="HBoxContainer" parent="Panel"]

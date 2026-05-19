@@ -30,3 +30,7 @@ extends Resource
 
 ## Slot for the future `AmuletEffect` hook resource. Null for M5.
 @export var amulet_effect: Resource
+
+## Optional icon for HUD / selection card display. Null falls back to a
+## procedural placeholder (palette color + first letter of display_name).
+@export var icon: Texture2D

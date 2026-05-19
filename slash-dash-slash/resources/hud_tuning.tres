@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="HudTuning" load_steps=2 format=3 uid="uid://b1hudtune001"]
+
+[ext_resource type="Script" uid="uid://bbnoxl747n6qa" path="res://scripts/resources/hud_tuning.gd" id="1_hudtune"]
+
+[resource]
+script = ExtResource("1_hudtune")
+health_offset = Vector2(0, -8)
+status_offset = Vector2(0, 8)
+pip_spacing = 5.0
+pip_fade_duration = 0.2
+heart_filled_color = Color(0.78, 0.15, 0.25, 1)
+heart_drained_color = Color(0.3, 0.18, 0.2, 0.4)
+icon_size = 14
+slot_frame_color = Color(0.34, 0.78, 0.42, 1)
+slot_empty_alpha = 0.25
+chip_padding = Vector2(6, 6)
+chip_separator_width = 4

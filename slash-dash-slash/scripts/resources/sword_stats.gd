@@ -39,3 +39,7 @@ extends Resource
 
 ## Slot for the future `SwordSpecial` hook resource. Null for M5.
 @export var special_ability: Resource
+
+## Optional icon for HUD / selection card display. Null falls back to a
+## procedural placeholder (palette color + first letter of display_name).
+@export var icon: Texture2D

@@ -1,6 +1,6 @@
 # gems
 
-**Status:** Shipped (consolidated 2026-05-19, supersedes `gem-resource-schema`, `weapon-gem-crit-proc`, `weapon-gem-roster`, `amulet-gem-roster`)
+**Status:** Synced 2026-05-19 (hud; consolidated, supersedes `gem-resource-schema`, `weapon-gem-crit-proc`, `weapon-gem-roster`, `amulet-gem-roster`)
 
 ## Goal
 
@@ -31,6 +31,7 @@ One spec for the entire gem system: the two Resource hierarchies (`WeaponGem` + 
 - `static func description(kind: Kind) -> String` — short flavor + mechanical hint.
 - `static func kind_name(kind: Kind) -> String` — lowercase tag stem (`"fire"`, …). Distinct from display_name so renaming gems doesn't break tag matching.
 - `static func base_chance(kind: Kind) -> float`, `base_damage_multiplier(kind) -> float`, `color(kind) -> Color`.
+- `static func icon(kind: Kind) -> Texture2D` (added by `hud`) — loads `assets/icons/elements/<kind_name>.png` if present, else null (HUD falls back to a procedural placeholder).
 
 `WeaponGem` (`scripts/gems/weapon_gem.gd`, `class_name WeaponGem extends Resource`):
 - `@export var element: int` — `Element.Kind` value.
@@ -42,7 +43,7 @@ One spec for the entire gem system: the two Resource hierarchies (`WeaponGem` + 
   - `on_combo(player, partner_gems, ctx)` — once per slash on each procced gem when 2+ procced; in addition to (not instead of) on_proc. Default no-op; combo content deferred to `gem-combo-content`. WIND multiplier last-write-wins if two WIND gems proc.
 
 `AmuletGem` (`scripts/gems/amulet_gem.gd`, `class_name AmuletGem extends Resource`):
-- `@export var display_name: String`, `description: String`.
+- `@export var display_name: String`, `description: String`, `icon: Texture2D` (icon added by `hud`; null falls back to placeholder).
 - Hooks (all default no-op):
   - `on_equip(player)` — install passive modifiers. Called from `Player._ready`.
   - `on_unequip(player)` — restore. No call site yet (no hot-swap path).
@@ -78,7 +79,7 @@ Player wiring (`scripts/player.gd`):
 - `Player.damaged` signal is `(amount: int, source: Node)`. `Player.take_damage(amount, source: Node = null)`. `DummyEnemy._do_attack` passes `self` as source.
 
 Amulet gem implementations:
-- `VampiricAmuletGem` (`scripts/gems/amulets/vampiric_amulet_gem.gd`) — `@export var heal_per_kill: int`. `on_kill`: `player.health = mini(player.equipped_amulet.max_health, player.health + heal_per_kill)`; emits `player.damaged(-heal_per_kill, null)` as a placeholder healed signal that the debug `damage_number_spawner` renders as a green popup.
+- `VampiricAmuletGem` (`scripts/gems/amulets/vampiric_amulet_gem.gd`) — `@export var heal_per_kill: int`. `on_kill` routes through `player._set_health(player.health + heal_per_kill, null)` (since `hud`). `_set_health` clamps, emits `health_changed` for the HUD, and emits `damaged(prev - new, null)` so the debug `damage_number_spawner` keeps rendering green popups.
 - `WallPassAmuletGem` (`scripts/gems/amulets/wall_pass_amulet_gem.gd`) — `on_equip` stores `_prior_mask`, sets `player.collision_mask = 0`. `on_unequip` restores. No-op restore today (no hot-swap call site).
 - `ThornsAmuletGem` (`scripts/gems/amulets/thorns_amulet_gem.gd`) — `@export var thorns_damage: int`. `on_player_damaged`: if `source` valid + has `take_dash_hit`, call `source.take_dash_hit(thorns_damage, Vector2.ZERO)` (counts as a front hit, full armor applies).
 
@@ -100,6 +101,6 @@ LogWeaponGem and per-element weapon-gem `.tres` files were retired during consol
 - Multi-kill in one slash: `on_kill` fires N times → vampiric heals N. Intentional.
 - Thorns reentrancy: enemy `_do_attack` checks `is_instance_valid(self)` after the player call before mutating cooldown.
 - `WallPassAmuletGem.on_unequip` is dead today (no hot-swap path); restoration code reserved.
-- Heal popup uses negative `damaged.emit(-N, null)` as a placeholder; the debug damage_number_spawner renders it green. A dedicated `healed` signal is the cleaner future path.
+- Heal popup uses the negative `damaged` delta emitted by `Player._set_health` as a placeholder; the debug damage_number_spawner renders it green. A dedicated `healed` signal is the cleaner future path.
 - `equipped_sword.gem_slot_count` cap unenforced — `debug_loadout` exceeds it intentionally for demo. Selection UI is where enforcement lands.
 - Out of scope: combo content (per-pair element payloads — `gem-combo-content`), mega-combo (3+ special effect), gem upgrades (chance / multiplier / duration extenders — `upgrade-card-draft`), per-element SFX, gem icons, status-icon UI above enemies, real `healed` signal, debug gem-swap menu (separate `debug-loadout-menu`).

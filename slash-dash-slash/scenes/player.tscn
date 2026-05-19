@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://di1jjoeakpifk"]
+[gd_scene load_steps=13 format=3 uid="uid://di1jjoeakpifk"]
 
 [ext_resource type="Script" uid="uid://c1s7cnsv4scd5" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Resource" uid="uid://bgqmkn601ssci" path="res://resources/dash_tuning.tres" id="2_tuning"]
@@ -8,6 +8,8 @@
 [ext_resource type="Resource" uid="uid://b1idlanyard" path="res://resources/equipment/amulets/id_lanyard.tres" id="7_amulet"]
 [ext_resource type="Resource" uid="uid://b1jankey001" path="res://resources/gems/amulets/janitors_master_key.tres" id="7_smehm"]
 [ext_resource type="Resource" uid="uid://b1wgtune001" path="res://resources/weapon_gem_tuning.tres" id="10_gtune"]
+[ext_resource type="PackedScene" uid="uid://b1hudhpip001" path="res://scenes/ui/health_pips.tscn" id="11_hpip"]
+[ext_resource type="PackedScene" uid="uid://b1hudpsi001" path="res://scenes/ui/player_status_icons.tscn" id="12_psi"]
 
 [sub_resource type="CircleShape2D" id="cs_player"]
 radius = 6.0
@@ -58,3 +60,7 @@ monitorable = false
 shape = SubResource("cs_player")
 
 [node name="StaminaPips" parent="." instance=ExtResource("4_pips")]
+
+[node name="HealthPips" parent="." instance=ExtResource("11_hpip")]
+
+[node name="PlayerStatusIcons" parent="." instance=ExtResource("12_psi")]
