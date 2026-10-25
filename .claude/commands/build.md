@@ -3,11 +3,11 @@ description: Implement a spec end-to-end
 argument-hint: <spec-name>
 ---
 
-You are implementing the spec `specs/$ARGUMENTS.md` in the slash-dash-slash Godot 4.4 project.
+You are implementing the spec `docs/specs/$ARGUMENTS.md` in the slash-dash-slash Godot 4.4 project.
 
 ## Steps
 
-1. **Load context**: Read `specs/$ARGUMENTS.md` and `GDD.md`. If the spec file is missing, stop and tell the user.
+1. **Load context**: Read `docs/specs/$ARGUMENTS.md` and `docs/GDD.md`. If the spec file is missing, stop and tell the user.
 
 2. **Check status**:
    - If `Draft` or `Building` → proceed.
@@ -28,6 +28,6 @@ You are implementing the spec `specs/$ARGUMENTS.md` in the slash-dash-slash Godo
 
 ## Constraints
 
-- Do not edit `GDD.md` or other specs.
+- Do not edit `docs/GDD.md` or other specs.
 - Do not add features beyond the spec's task list — if you discover a gap, stop and ask whether to update the spec first.
 - Do not create tests, CI, or build scripts unless the spec asks for them.

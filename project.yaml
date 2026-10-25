@@ -1,0 +1,8 @@
+# Метаданные для gamedev-hub. Хаб читает этот файл из main и показывает на дашборде.
+# phase: idea | prototype | vertical-slice | content | polish | released | paused | archived
+name: slash-dash-slash
+tagline: Мобильный роглайк-слэшер, где рывок — единственный глагол; меч, самоцветы и офис 1970-х с настоящей магией
+engine: Godot 4.4 (mobile)
+phase: prototype
+tracker: github-issues
+next: "M1 Вертикальный срез: этаж B от старта до босса — сначала комбо гемов и арена с эскалацией (ROADMAP M7, M9)"

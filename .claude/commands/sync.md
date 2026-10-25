@@ -3,7 +3,7 @@ description: Close drift between spec and shipped code
 argument-hint: <spec-name>
 ---
 
-You are reconciling drift between `specs/$ARGUMENTS.md` and the shipped code in slash-dash-slash.
+You are reconciling drift between `docs/specs/$ARGUMENTS.md` and the shipped code in slash-dash-slash.
 
 ## Principle
 
@@ -11,7 +11,7 @@ Code is the source of truth post-ship. The spec gets updated to match reality, N
 
 ## Steps
 
-1. **Read the spec**: `specs/$ARGUMENTS.md`. If missing, stop.
+1. **Read the spec**: `docs/specs/$ARGUMENTS.md`. If missing, stop.
 
 2. **Find the implementation**: Search `slash-dash-slash/scripts/`, `slash-dash-slash/scenes/`, and `slash-dash-slash/resources/` for files related to this spec (by name, by referenced classes, by signal names mentioned in the spec).
 
@@ -28,5 +28,5 @@ Code is the source of truth post-ship. The spec gets updated to match reality, N
 ## Constraints
 
 - Do not modify any code or resources.
-- Do not modify other specs or `GDD.md`.
-- If you find drift that suggests a pillar violation (per `GDD.md`), flag it but don't act.
+- Do not modify other specs or `docs/GDD.md`.
+- If you find drift that suggests a pillar violation (per `docs/GDD.md`), flag it but don't act.

@@ -1,5 +1,21 @@
 # Roadmap — slash-dash-slash
 
+> **План работ ведётся в [`plan.yaml`](plan.yaml) / [`PLAN.md`](PLAN.md) и GitHub Issues** (вехи M0–M7).
+> Этот файл отвечает на другой вопрос — *в каком порядке строить спеки* — и нумерует вехи по спекам (M1–M28).
+> Связь двух нумераций:
+>
+> | Веха плана (GitHub) | Вехи ROADMAP |
+> |---|---|
+> | M0 Боевое ядро (закрыта) | M1–M6, M8, M10 (interaction-system) |
+> | M1 Вертикальный срез: этаж B | M7, M9, M10 (остальные пропы), M13, M15 (драфт) |
+> | M2 Контент и разнообразие | M11, M13 (полный ростер), M14, M15 (редкости, формулы), M16, M18 |
+> | M3 Четыре этажа и история | M12, M19, M20, M21, M27 (музыка) |
+> | M4 Мета и концовки | M17, M22, M23, M24, M25, M26 |
+> | M5 Смачность и полировка | M27 (SFX), M28 |
+> | M6 Релиз, M7 Если останется время | нет в ROADMAP |
+>
+> У каждой задачи в `plan.yaml` поле `specs` называет спеки, которые она закрывает.
+
 Build order. Each milestone is a *demoable build state* answering one specific question. Specs map to milestones. Reorder freely as we learn things.
 
 Conventions:
@@ -8,7 +24,7 @@ Conventions:
 - A milestone is "done" when its question can be answered yes by playing the build, not when its specs are merged.
 - Numbering is preserved across deletions so cross-references stay stable.
 
-**Completed:** M1 Foundations · M2 Dash skeleton · M3 Combat verb · M4 First enemy AI · M5 Equipment basics · M6 First gem · M8 Amulet gems · M10 (interaction-system half). See git history + `specs/` for the shipped specs.
+**Completed:** M1 Foundations · M2 Dash skeleton · M3 Combat verb · M4 First enemy AI · M5 Equipment basics · M6 First gem · M8 Amulet gems · M10 (interaction-system half). See git history + `docs/specs/` for the shipped specs.
 
 ---
 

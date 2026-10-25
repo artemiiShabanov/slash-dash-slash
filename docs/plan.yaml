@@ -1,0 +1,726 @@
+# Единый источник плана slash-dash-slash. Из него генерируются docs/PLAN.md и метки/вехи/issues на GitHub:
+#   python3 tools/sync_plan.py            # обновить PLAN.md
+#   python3 tools/sync_plan.py --github   # плюс создать метки, вехи и issues (идемпотентно)
+#
+# Файл собран 2026-10-25 из уже существующих 70 issues: заголовки совпадают с GitHub один в один,
+# иначе sync_plan.py создаст дубликат. Переименовывать задачу только одновременно здесь и на GitHub.
+#
+# size: S = полдня, M = день, L = два дня, XL = три дня
+# Задачи атомарны. Issue закрываются на GitHub; done: true здесь только для уже закрытых при миграции.
+#
+# Две нумерации вех. Вехи плана (M0-M7, они же milestones на GitHub) группируют задачи по играбельным
+# состояниям сборки. docs/ROADMAP.md нумерует вехи по спекам (M1-M28) и отвечает на вопрос «что строить
+# следующим». Поле `roadmap` у вехи и `specs` у задачи связывают их; sync_plan.py эти поля игнорирует.
+# `specs` для закрытых задач — файлы в docs/specs/, для открытых — имена спек из ROADMAP, которые
+# появятся через /spec <name>.
+
+project: slash-dash-slash
+
+labels:
+  types:
+    "type: code":     {color: "1d76db", desc: "Геймплей, системы, инструменты"}
+    "type: design":   {color: "0e8a16", desc: "Контент, баланс, правила, ростеры, квесты"}
+    "type: story":    {color: "8e44ad", desc: "Нарратив, катсцены, тексты, PA, концовки"}
+    "type: ui":       {color: "e91e63", desc: "HUD, меню, экраны, карточки"}
+    "type: art":      {color: "fbca04", desc: "Пиксель-арт: спрайты, тайлы, иконки, слайды"}
+    "type: vfx":      {color: "f39c12", desc: "Частицы, шейдеры, джус, пост-обработка"}
+    "type: audio":    {color: "1abc9c", desc: "Звук и музыка"}
+    "type: release":  {color: "5a5a5a", desc: "Сборки, магазины, инфраструктура"}
+  sizes:
+    "size: S":  {color: "c5def5", desc: "Полдня"}
+    "size: M":  {color: "9ec5e8", desc: "День"}
+    "size: L":  {color: "6fa8dc", desc: "Два дня"}
+    "size: XL": {color: "3d85c6", desc: "Три дня"}
+  owners:
+    "owner: artemii": {color: "c2e0c6", desc: "Делает Артемий"}
+    "owner: claude":  {color: "bfd4f2", desc: "Делает Claude"}
+    "owner: both":    {color: "e6d7f5", desc: "Совместно"}
+  status:
+    "status: needs decision": {color: "b60205", desc: "Нужно решение Артемия по дизайну"}
+    "status: in progress":    {color: "fef2c0", desc: "В работе"}
+    "status: blocked":        {color: "d93f0b", desc: "Заблокировано"}
+    "status: needs playtest": {color: "d4c5f9", desc: "Готово, ждёт проверки в игре"}
+
+phases:
+  - id: M0
+    title: "M0 Боевое ядро"
+    goal: "Рывок как единственный глагол работает и ощущается: ввод, удар, враг, снаряжение, гемы."
+    done_when: "Десять спек ядра в статусе Shipped/Synced, демо-сцены m1-m3 играются с клавиатуры, мыши и тача."
+    status: done
+    roadmap: "M1-M6, M8, M10 (половина)"
+    issues:
+      - title: "Ввод: свайп, стик, мышь, клавиатура, горячая смена источника"
+        types: [code]
+        owner: claude
+        size: L
+        done: true
+        issue: 1
+        specs: [input_system]
+        roadmap: "M1"
+      - title: "Рывок: фиксированная дистанция, стены, кулдаун меча и стамина"
+        types: [code]
+        owner: claude
+        size: L
+        done: true
+        issue: 2
+        specs: [dash]
+        roadmap: "M2 M3"
+      - title: "Попадания и направленная броня"
+        types: [code, design]
+        owner: claude
+        size: M
+        done: true
+        issue: 3
+        specs: [combat-hit-resolution]
+        roadmap: "M3"
+      - title: "Враг: стат-блок, хуки способностей, ИИ преследования, статусы"
+        types: [code]
+        owner: claude
+        size: L
+        done: true
+        issue: 4
+        specs: [enemy]
+        roadmap: "M4"
+      - title: "Снаряжение: мечи, амулеты, экран выбора на старте"
+        types: [code, ui]
+        owner: claude
+        size: L
+        done: true
+        issue: 5
+        specs: [equipment, equipment-selection-ui]
+        roadmap: "M5"
+      - title: "Гемы: шесть стихий оружия, три гема амулета, прок и диспатч комбо"
+        types: [code, design]
+        owner: claude
+        size: XL
+        done: true
+        issue: 6
+        specs: [gems]
+        roadmap: "M6 M8"
+      - title: "HUD: сердца, стамина, чип снаряжения"
+        types: [ui]
+        owner: claude
+        size: M
+        done: true
+        issue: 7
+        specs: [hud]
+      - title: "Взаимодействие рывком: кулер и магнитные пикапы"
+        types: [code]
+        owner: claude
+        size: M
+        done: true
+        issue: 8
+        specs: [interaction-system]
+        roadmap: "M10"
+      - title: "Стиль UI: палитра, два шрифта, тема, ЭЛТ-шейдер"
+        types: [ui, art]
+        owner: claude
+        size: M
+        done: true
+        issue: 9
+        specs: [ui-style-foundation]
+        roadmap: "M1"
+      - title: "Палитра SFX: рывок, взмах, два попадания, стена"
+        types: [audio]
+        owner: claude
+        size: S
+        done: true
+        issue: 10
+        specs: [audio_sfx_palette]
+        roadmap: "M3"
+
+  - id: M1
+    title: "M1 Вертикальный срез: этаж B от старта до босса"
+    goal: "Сыграть один этаж целиком: волны, карточки апгрейдов, босс, лифт, пусть и с заглушками."
+    done_when: "Один забег от выбора снаряжения до лифта без правок в инспекторе; плейтест 1 проведён, ответы записаны в DESIGN.md."
+    status: open
+    roadmap: "M7, M9, M10, M13, M15"
+    issues:
+      - title: "Базовая сцена уровня: комнаты, стены, спавн, камера"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 11
+        specs: [level-scene-base]
+        roadmap: "M9"
+        body: >-
+          Каркас этажа из нескольких комнат с коридорами. Камера следит за игроком, стены на нужном слое,
+          точки спавна врагов и пропов. Этаж B как первый экземпляр, без арта.
+      - title: "Волны и эскалация угрозы внутри этажа"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 12
+        specs: [threat-escalation]
+        roadmap: "M9"
+        body: >-
+          Волна = состав врагов и точки спавна, данные в ресурсе. Угроза растёт внутри этажа и
+          сбрасывается при переходе. Условие конца волны и пауза между волнами. Открытый вопрос: эскалация
+          по времени или по убийствам.
+      - title: "Три типа врагов этажа B: клерк, уборщик, засидевшийся"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 13
+        specs: [enemy-content-floor-b]
+        roadmap: "M13"
+        body: >-
+          Три поведения на базе EnemyStats + способностей: быстрый слабый, медленный бронированный
+          спереди, странный (например, проходит сквозь картотеки). Имена и облик могут поменяться в M2.
+      - title: "Смерть и экран конца забега"
+        types: [code, ui]
+        owner: claude
+        size: S
+        issue: 14
+        body: >-
+          При 0 HP: заморозка, короткая пауза, экран с итогами (этаж, убийства, время) и кнопка «новый
+          работник», которая возвращает на выбор снаряжения.
+      - title: "Драфт апгрейдов: карточка из трёх после волны, первые 6-8 апгрейдов"
+        types: [code, design, ui]
+        owner: claude
+        size: L
+        issue: 15
+        specs: [upgrade-types, upgrade-card-draft]
+        roadmap: "M15"
+        body: >-
+          Каркас апгрейдов как ресурсов и экран-карточка в бумажном стиле. Первые типы: шанс прока,
+          множитель, длительность эффекта, новый гем в свободный слот. Без редкостей и формул, числа
+          фиксированные.
+      - title: "Комбо гемов: первые 5 пар и мега-комбо 3+"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 16
+        specs: [gem-combo-proc, gem-combo-content, gem-mega-combo]
+        roadmap: "M7"
+        body: >-
+          Содержимое on_combo для пяти пар (например огонь+ветер, вода+молния, лёд+металл) и один эффект
+          для трёх и более проков. Каждое комбо должно читаться на экране как момент.
+      - title: "Вендинг и картотека: лут и апгрейд как пропы"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 17
+        specs: [universal-props]
+        roadmap: "M10"
+        body: >-
+          Два новых Interaction на базе кулера: вендинг выбрасывает пикапы (пока лечение и временный
+          бафф), картотека выдаёт карточку апгрейда. Одноразовые, с видимым опустошением.
+      - title: "Каркас босса и босс Архива"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 18
+        specs: [boss-base, boss-archives]
+        roadmap: "M13"
+        body: >-
+          Базовый класс босса: фазы, телеграф атак, арена с запертыми дверями, память о прошлых поражениях
+          (пока счётчик). Первый босс этажа B. Имя и облик босса Архива: нужно решение Артемия.
+      - title: "Лифт: переход на следующий этаж"
+        types: [code]
+        owner: claude
+        size: S
+        issue: 19
+        specs: [floor-transition]
+        roadmap: "M13"
+        body: >-
+          После босса открывается лифт. Рывок в лифт грузит следующий этаж (пока снова этаж B) со сбросом
+          угрозы. Переход с затемнением.
+      - title: "Плейтест 1: весело ли? Дистанция рывка, кулдаун, плотность врагов"
+        types: [design]
+        owner: artemii
+        size: M
+        issue: 20
+        body: >-
+          Сыграть 5+ забегов по этажу B, записать ощущения по пилларам: коммит это глагол, вкус важнее
+          чисел. Снять открытые вопросы из DESIGN.md: дистанция, кулдаун, стамина, частота карточек.
+
+  - id: M2
+    title: "M2 Контент и разнообразие"
+    goal: "Набить этаж B контентом так, чтобы десять забегов не повторялись: враги, квесты, апгрейды, гемы, процген."
+    done_when: "Десять забегов разными парами меч+амулет ощущаются разными билдами; плейтест 2 проведён."
+    status: open
+    roadmap: "M11, M13, M14, M15, M16, M18"
+    issues:
+      - title: "Система квестов: главный квест открывает босса, два побочных с наградой"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 21
+        specs: [quest-system]
+        roadmap: "M14"
+        body: >-
+          Квест как ресурс: условие, прогресс, награда. Главный квест этажа закрывает дверь босса,
+          побочные дают гем или слот. Без UI-маркеров: квест замечают в мире.
+      - title: "Квесты этажа B"
+        types: [design, story]
+        owner: both
+        size: M
+        issue: 22
+        specs: [quest-content-floor-b]
+        roadmap: "M14"
+        body: >-
+          Главный квест и два побочных в духе архива: уничтожить три надгробия-картотеки, найти форму с
+          собственным именем, убить минибосса-шредера. Тексты и награды.
+      - title: "Полный ростер врагов этажа B"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 23
+        specs: [enemy-content-floor-b]
+        roadmap: "M13"
+        body: >-
+          Расширить до 5-6 типов, включая минибосса. Броня спереди и сзади у разных типов, один проходит
+          сквозь стены.
+      - title: "Контент комбо гемов: все 21 пара"
+        types: [code, design]
+        owner: both
+        size: XL
+        issue: 24
+        specs: [gem-combo-content]
+        roadmap: "M18"
+        body: >-
+          Эффект для каждой пары стихий, читаемый по картинке и звуку. Дизайн пар совместно, реализация
+          Claude.
+      - title: "Апгрейды: полный набор, редкости, формулы величин, условия предложения"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 25
+        specs: [upgrade-rarity-system, upgrade-magnitude-formulas, upgrade-eligibility]
+        roadmap: "M15"
+        body: >-
+          Редкость → величина эффекта, таблица частот, кто кому предлагается (нельзя предложить гем в
+          занятый слот), бесповые апгрейды под стихию.
+      - title: "Ростер мечей и амулетов: по 4-5 штук со спецспособностями"
+        types: [code, design]
+        owner: both
+        size: L
+        issue: 26
+        specs: [equipment]
+        roadmap: "M18"
+        body: >-
+          Хук SwordSpecial и AmuletEffect, сплэш у тяжёлых мечей, щиты и регенерация у амулетов. Названия
+          в духе офиса.
+      - title: "Ростер гемов амулета: 6-8 штук"
+        types: [code, design]
+        owner: claude
+        size: M
+        issue: 27
+        specs: [gems]
+        roadmap: "M18"
+        body: >-
+          На существующих хуках: взрыв при убийстве, щит после серии, ускорение регена при низком HP и т.
+          п.
+      - title: "Процген: рандомизация позиций объектов и декора"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 28
+        specs: [procgen-positions]
+        roadmap: "M16"
+        body: >-
+          Структура этажа фиксированная, позиции пропов, спавнов и деталей меняются с сидом забега. Пиллар
+          4.
+      - title: "Генератор внешности работников"
+        types: [code, art]
+        owner: both
+        size: L
+        issue: 29
+        specs: [look-generator]
+        roadmap: "M11"
+        body: >-
+          Слои: тело, причёска, очки, рубашка, брюки, аксессуар. Те же параметры дают спрайт и портрет.
+          Имена из таблицы, одна деталь стола на забег. Слои рисует Артемий, сборку пишет Claude.
+      - title: "Речевые пузыри и клац-озвучка"
+        types: [code, audio]
+        owner: claude
+        size: M
+        issue: 30
+        specs: [speaking-system-bubbles, speaking-audio-clack]
+        roadmap: "M11"
+        body: >-
+          Пузырь над NPC, боссом, гемом: автопозиция, автоскрытие. Буквы клацают с высотой по архетипу.
+          Рывок в мирного NPC открывает реплику.
+      - title: "Плейтест 2: разнообразие билдов и реиграбельность"
+        types: [design]
+        owner: artemii
+        size: M
+        issue: 31
+        body: >-
+          10 забегов разными парами меч+амулет. Есть ли ощущение билда, какие комбо запоминаются, что
+          повторяется.
+
+  - id: M3
+    title: "M3 Четыре этажа и история"
+    goal: "Полный забег B → 1 → 7 → 13 с боссами, катсценами и голосом PA."
+    done_when: "Забег B → 1 → 7 → 13 проходится от вступительной катсцены до финального босса, пусть с заглушками арта."
+    status: open
+    roadmap: "M12, M19, M20, M21, M27 (музыка)"
+    issues:
+      - title: "Движок катсцен: слайды, печатная машинка, пропуск"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 32
+        specs: [cutscene-engine]
+        roadmap: "M12"
+        body: >-
+          Ресурс Cutscene со списком слайдов: картинка, говорящий, текст, звук, условие перехода. Тап
+          вперёд, долгое нажатие пропуск, затемнение между слайдами.
+      - title: "Вступительная катсцена: менеджер и катана"
+        types: [story, art]
+        owner: both
+        size: M
+        issue: 33
+        specs: [cutscene-opening]
+        roadmap: "M12"
+        body: >-
+          Пробуждение, задание на инвентаризацию, внутренний монолог, первый ввод берёт катану. Имя и
+          деталь стола рандомны, пропуск со второго забега. Тексты Артемий, слайды совместно.
+      - title: "Голос PA: сэмплы и палитра по этажам"
+        types: [code, audio]
+        owner: claude
+        size: M
+        issue: 34
+        specs: [pa-voice-system]
+        roadmap: "M12"
+        body: >-
+          Приглушённые объявления за стенами, свой тон на этаж, триггеры от событий. Без настоящей
+          озвучки: обработанный TTS или вокальные сэмплы.
+      - title: "Этаж 1 Кубиклы: уровень, враги, квесты"
+        types: [code, design, art]
+        owner: both
+        size: XL
+        issue: 35
+        specs: [floor-content-1, enemy-content-floor-1, quest-content-floor-1]
+        roadmap: "M19"
+        body: >-
+          Открытый офис, повторяющиеся кубиклы, ксерокс как предмет этажа. Дроны, бухгалтеры,
+          доппельгангеры из ксерокса. Главный и два побочных квеста.
+      - title: "Босс: Менеджер"
+        types: [code, design, story]
+        owner: claude
+        size: L
+        issue: 36
+        specs: [boss-manager]
+        roadmap: "M19"
+        body: >-
+          Тот же менеджер, что выдал катану. Преследует лично, реплики ссылаются на прошлые поражения.
+      - title: "Этаж 7 Средний менеджмент: уровень, враги, квесты"
+        types: [code, design, art]
+        owner: both
+        size: XL
+        issue: 37
+        specs: [floor-content-7, enemy-content-floor-7, quest-content-floor-7]
+        roadmap: "M20"
+        body: >-
+          Панели, таблички, переговорные с ритуалами за дверями. HR-силовики, аудиторы, охрана в костюмах.
+          Стол переговоров как предмет этажа.
+      - title: "Босс этажа 7"
+        types: [code, design, story]
+        owner: both
+        size: L
+        issue: 38
+        specs: [boss-floor-7]
+        roadmap: "M20"
+        body: >-
+          Кто это: HR-директор, аудитор, глава охраны. Нужно решение Артемия.
+      - title: "Этаж 13 Совет: уровень и враги"
+        types: [code, design, art]
+        owner: both
+        size: XL
+        issue: 39
+        specs: [floor-content-13, enemy-content-floor-13, quest-content-floor-13]
+        roadmap: "M21"
+        body: >-
+          Брутализм или невозможно большая переговорная, неправильный вид из окон. PA говорит с игроком по
+          имени. Враждебные кулер и вендинг.
+      - title: "Финальный босс и Тёмный гем"
+        types: [code, design, story]
+        owner: claude
+        size: L
+        issue: 40
+        specs: [boss-floor-13, cutscene-gem-speech]
+        roadmap: "M21 M24"
+        body: >-
+          Босс 13, после победы двери запираются, появляется гем с речью. Двойное состояние гема:
+          предлагает место или уязвим при штампованной бумаге. Пока без оверлея повышения.
+      - title: "Музыкальная подложка: деградирующий музак по этажам"
+        types: [audio]
+        owner: artemii
+        size: L
+        issue: 41
+        specs: [audio-music-bed]
+        roadmap: "M27"
+        body: >-
+          Четыре трека в духе библиотечной музыки 1970-х. Слои и параметры деградации (детонация,
+          замедление, выпадение) управляются уровнем угрозы.
+
+  - id: M4
+    title: "M4 Мета и концовки"
+    goal: "Забеги связаны между собой: сохранения, ачивки, разблокировки, шорткаты, четыре концовки."
+    done_when: "Достижимы все четыре концовки, сохранение переживает перезапуск, шорткат читается без UI; плейтест 3 проведён."
+    status: open
+    roadmap: "M17, M22, M23, M24, M25, M26"
+    issues:
+      - title: "Сохранение мета-состояния"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 42
+        specs: [save-state]
+        roadmap: "M17"
+        body: >-
+          JSON в user://: ачивки, счётчики прохождений этажей, флаги концовок, последний победитель,
+          модификатор сложности мира.
+      - title: "Концовка Пешка: пять минут без ввода"
+        types: [code, story]
+        owner: claude
+        size: S
+        issue: 43
+        specs: [ending-pawn, cutscene-pawn-ending]
+        roadmap: "M17"
+        body: >-
+          Таймер с начала забега, любой ввод блокирует до нового забега. Слайд-катсцена: корпорация
+          довольна.
+      - title: "Достижения и разблокировка мечей и амулетов"
+        types: [code, design]
+        owner: both
+        size: L
+        issue: 44
+        specs: [achievement-system, sword-unlock-conditions, amulet-unlock-conditions]
+        roadmap: "M22"
+        body: >-
+          Глобальные ачивки открывают мечи, внутриигровые (победить босса X, найти Y) открывают амулеты.
+          Экран выбора показывает запертое. Сообщения об ачивках в стиле служебной записки.
+      - title: "Постоянные шорткаты: дверь, условия, компенсация дропа"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 45
+        specs: [shortcut-mechanic, shortcut-content]
+        roadmap: "M23"
+        body: >-
+          Дверь на краю каждого этажа кроме 13, деградирует по мере выполнения условий. Лестница в чёрный
+          ход следующего этажа, добивка до 70 % дропа, улики при каждом открытии.
+      - title: "Концовка Работник: оверлей босса-повышенца и усложнение мира"
+        types: [code, design, art]
+        owner: both
+        size: L
+        issue: 46
+        specs: [ending-worker, world-state-modifiers, boss-promoter-overlay, cutscene-worker-ending]
+        roadmap: "M24"
+        body: >-
+          Касание гема: катсцена, имя и облик победителя записываются, следующий босс 13 носит их с
+          оверлеем искажения. Все враги сильнее, пока не достигнута TRUE.
+      - title: "Субквест «Заявление за две недели»: форма, ручка, штамп, реакция PA"
+        types: [code, design, story]
+        owner: claude
+        size: L
+        issue: 47
+        specs: [two-weeks-notice-subquest]
+        roadmap: "M25"
+        body: >-
+          Три шага строго по порядку на этажах B, 1, 7. Автоподпись, штамп у HR-ящика, частный лифт рядом.
+          PA шепчет, глючит, зовёт по должности. Работники смотрят на несущего бумаги.
+      - title: "Концовки Беглец и TRUE, катсцены всех концовок"
+        types: [code, story, art]
+        owner: both
+        size: L
+        issue: 48
+        specs: [ending-runaway, ending-true, cutscene-runaway-ending, cutscene-true-ending]
+        roadmap: "M26"
+        body: >-
+          Частный лифт с 7 это Беглец. Удар по уязвимому гему это TRUE: мир откатывается, свободная игра.
+          Четыре слайд-катсцены.
+      - title: "Плейтест 3: мета-петля на пять и больше забегов"
+        types: [design]
+        owner: artemii
+        size: L
+        issue: 49
+        body: >-
+          Мотивируют ли ачивки, читается ли шорткат без UI, ощущается ли цикл босс-победитель-босс.
+
+  - id: M5
+    title: "M5 Смачность и полировка"
+    goal: "Каждый рывок ощущается, пиксель-арт и звук держат настроение офисного оккульта."
+    done_when: "Заглушек арта и звука не осталось, числа подогнаны по логам забегов, игра удобна одной рукой на телефоне."
+    status: open
+    roadmap: "M27 (SFX), M28"
+    issues:
+      - title: "Арт персонажей и врагов: спрайты, анимации"
+        types: [art]
+        owner: artemii
+        size: XL
+        issue: 50
+        roadmap: "M28"
+        body: >-
+          Слои генератора работников, враги всех этажей, боссы, оверлей повышения.
+      - title: "Арт окружения по этажам: тайлсеты, пропы"
+        types: [art]
+        owner: artemii
+        size: XL
+        issue: 51
+        roadmap: "M28"
+        body: >-
+          Четыре этажа, универсальные пропы в трёх состояниях (норма, чуть неправильно, враждебно), двери
+          шорткатов в стадиях деградации.
+      - title: "Джус: хитстоп, тряска, частицы, вспышки"
+        types: [code, vfx]
+        owner: claude
+        size: M
+        issue: 52
+        roadmap: "M28"
+        body: >-
+          Хитстоп на попадании в спину, тряска на стене, частицы стихий, вспышка заряда меча. Всё
+          настраивается в tres.
+      - title: "Звуковые сигнатуры стихий, смесь комбо, мега-аккорд"
+        types: [audio]
+        owner: both
+        size: M
+        issue: 53
+        specs: [audio_sfx_palette]
+        roadmap: "M27"
+        body: >-
+          Шесть звуков, различимых на слух, процедурная смесь двух для комбо, один аккорд для меги.
+          Полифония вместо обрыва.
+      - title: "Иконки гемов, снаряжения, UI-арт"
+        types: [ui, art]
+        owner: artemii
+        size: M
+        issue: 54
+        roadmap: "M28"
+        body: >-
+          Заменить процедурные заглушки в HUD и карточках. Иконки падают в tres без правки кода.
+      - title: "Статус-иконки над игроком и врагами"
+        types: [ui]
+        owner: claude
+        size: S
+        issue: 55
+        specs: [hud]
+        roadmap: "M28"
+        body: >-
+          Полоса статусов уже зарезервирована в HUD. Иконки горения, замедления, оглушения, уязвимости.
+      - title: "ЭЛТ-настроение по этажам"
+        types: [vfx]
+        owner: claude
+        size: S
+        issue: 56
+        specs: [ui-style-foundation]
+        roadmap: "M28"
+        body: >-
+          Свой CRTTuning на этаж: оттенок фосфора, шум, искажение растут к 13.
+      - title: "Тач-UI: пауза, безопасные зоны, одна рука"
+        types: [ui]
+        owner: claude
+        size: M
+        issue: 57
+        roadmap: "M28"
+        body: >-
+          Кнопка паузы для тача, учёт выреза и скруглений, проверка на телефоне что всё дотягивается одним
+          пальцем.
+      - title: "Балансировка чисел всех систем"
+        types: [design]
+        owner: both
+        size: L
+        issue: 58
+        roadmap: "M28"
+        body: >-
+          Логи забегов, телеметрия проков и смертей, подгонка кривой этажей и боссов.
+
+  - id: M6
+    title: "M6 Релиз"
+    goal: "Сборки для телефонов и десктопа, страницы магазинов, настройки, плейтест и выход."
+    done_when: "Сборки опубликованы в App Store и Google Play, чек-лист запуска закрыт."
+    status: open
+    roadmap: "нет в ROADMAP"
+    issues:
+      - title: "Экспорт iOS и Android: пресеты, подписи, пайплайн сборок"
+        types: [release]
+        owner: both
+        size: M
+        issue: 59
+        body: >-
+          Export presets, сертификаты и ключи у Артемия, скрипт сборки и нумерация версий у Claude.
+      - title: "Десктоп-сборка: Mac, Windows, геймпад"
+        types: [code, release]
+        owner: claude
+        size: S
+        issue: 60
+        body: >-
+          Пиллар 5: десктоп не второй сорт. Проверка геймпада и мыши на сборке.
+      - title: "Настройки: громкость, ЭЛТ вкл/выкл, переназначение клавиш"
+        types: [code, ui]
+        owner: claude
+        size: M
+        issue: 61
+        body: >-
+          Минимум для доступности: отключить искривление и шум, громкость музыки и SFX, переназначение на
+          клавиатуре.
+      - title: "Локализация RU/EN"
+        types: [design, story]
+        owner: both
+        size: M
+        issue: 62
+        body: >-
+          Все тексты через переводы, включая слайды и реплики PA. Шрифты с кириллицей.
+      - title: "Производительность на телефоне: профилирование, 60 fps"
+        types: [code]
+        owner: claude
+        size: M
+        issue: 63
+        body: >-
+          Профилирование на реальном устройстве, стоимость ЭЛТ-шейдера, количество врагов на экране.
+      - title: "Страницы App Store и Google Play: иконка, скриншоты, трейлер"
+        types: [art, release]
+        owner: both
+        size: L
+        issue: 64
+        body: >-
+          Арт Артемий, захват и монтаж помогает Claude. Страница висит минимум две недели до релиза.
+      - title: "Закрытый плейтест и разбор багов"
+        types: [design]
+        owner: artemii
+        size: L
+        issue: 65
+      - title: "Чек-лист запуска"
+        types: [release]
+        owner: both
+        size: S
+        issue: 66
+
+  - id: M7
+    title: "M7 Если останется время"
+    goal: "Приятные вещи, которые не блокируют релиз."
+    done_when: "Не обязательна: берётся по желанию после M6."
+    status: open
+    roadmap: "нет в ROADMAP"
+    issues:
+      - title: "Steam-сборка и страница"
+        types: [release]
+        owner: both
+        size: M
+        issue: 67
+      - title: "Частичный перенос способностей босса-повышенца"
+        types: [code, design]
+        owner: claude
+        size: L
+        issue: 68
+        body: >-
+          Stretch из дизайна: босс 13 наследует не только облик, но и часть билда победителя.
+      - title: "Вторая раскладка каждого этажа"
+        types: [code, design]
+        owner: both
+        size: XL
+        issue: 69
+        body: >-
+          Альтернативный каркас на этаж, выбирается при старте забега. Пиллар 4 остаётся: обе раскладки
+          ручные.
+      - title: "Ачивки как служебные записки в архиве"
+        types: [story, ui]
+        owner: claude
+        size: M
+        issue: 70
+        body: >-
+          Экран ачивок в виде папки с меморандумами.
